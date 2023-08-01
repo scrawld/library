@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -65,6 +66,10 @@ func SetBody(body interface{}) ClientOptionFunc {
 		switch b := body.(type) {
 		case []byte:
 			c.Body = bytes.NewReader(b)
+		case string:
+			c.Body = strings.NewReader(b)
+		case url.Values:
+			c.Body = strings.NewReader(b.Encode())
 		default:
 			t, err := json.Marshal(b)
 			if err != nil {
@@ -146,8 +151,17 @@ func Call(url string, respBody interface{}, options ...ClientOptionFunc) (r *htt
 	defer r.Body.Close()
 
 	b, err := io.ReadAll(r.Body)
-	if err == nil && len(b) > 0 {
-		err = json.Unmarshal(b, respBody)
+	if err != nil {
+		err = fmt.Errorf("io read all error: %s", err)
+		return
+	}
+	if len(b) == 0 {
+		return
+	}
+	err = json.Unmarshal(b, respBody)
+	if err != nil {
+		err = fmt.Errorf("unmarshal error: %s, body %s", err, b)
+		return
 	}
 	return
 }
