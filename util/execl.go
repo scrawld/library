@@ -144,13 +144,12 @@ func ExportExcel(table interface{}, tbody interface{}) (*bytes.Buffer, error) {
 func ReadExcelToStruct[T any](filename string, body T) ([]T, error) {
 	var (
 		fieldIndexMap = map[string]int{}
-
-		bodyType = reflect.TypeOf(body)
-		fieldNum = bodyType.NumField()
+		bodyType      = reflect.TypeOf(body)
 	)
 	if t := bodyType.Kind(); t != reflect.Struct {
 		return nil, fmt.Errorf("body must be a struct, currently %s", t.String())
 	}
+	fieldNum := bodyType.NumField()
 	// get field index
 	for i := 0; i < fieldNum; i++ {
 		f := bodyType.Field(i)
