@@ -22,13 +22,18 @@ import (
  * 	{Name: "Alice", Age: 25, Email: "alice@example.com"},
  * 	{Name: "Bob", Age: 30, Email: "bob@example.com"},
  * }
- * buf, err := ExportCSV(Person{}, tbody)
+ * buf, err := ExportCSV(Person{}, tbody, true)
  * if err != nil {
  * 	//
  * }
  * os.WriteFile("test.csv", buf.Bytes(), 0644)
  */
-func ExportCSV[T any](table T, tbody []T) (*bytes.Buffer, error) {
+func ExportCSV[T any](table T, tbody []T, isWriteHead bool) (*bytes.Buffer, error) {
+	var (
+		buffer = bytes.NewBuffer(nil)
+		writer = csv.NewWriter(buffer)
+		tag    = "csv"
+	)
 	// make sure 'table' is a Struct
 	tableVal := reflect.ValueOf(table)
 	if tableVal.Kind() == reflect.Ptr {
@@ -37,37 +42,35 @@ func ExportCSV[T any](table T, tbody []T) (*bytes.Buffer, error) {
 	if tableVal.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("table not struct")
 	}
-	var (
-		buffer = bytes.NewBuffer(nil)
-		tag    = "csv"
+	// write head
+	if isWriteHead {
+		var (
+			tableFieldNum = tableVal.NumField()
+			thead         = []string{}
+		)
+		// get table head
+		for i := 0; i < tableFieldNum; i++ {
+			field := tableVal.Type().Field(i)
 
-		tableFieldNum = tableVal.NumField()
-		tbodyLen      = len(tbody)
-		thead         = []string{}
-	)
-	// get table head
-	for i := 0; i < tableFieldNum; i++ {
-		field := tableVal.Type().Field(i)
-
-		if !ast.IsExported(field.Name) {
-			continue
+			if !ast.IsExported(field.Name) {
+				continue
+			}
+			head := field.Tag.Get(tag)
+			// is ignored field
+			if head == "-" {
+				continue
+			}
+			if len(head) == 0 {
+				head = field.Name
+			}
+			thead = append(thead, head)
 		}
-		head := field.Tag.Get(tag)
-		// is ignored field
-		if head == "-" {
-			continue
+		// write table head
+		if err := writer.Write(thead); err != nil {
+			return nil, fmt.Errorf("write table head error: %s", err)
 		}
-		if len(head) == 0 {
-			head = field.Name
-		}
-		thead = append(thead, head)
 	}
-	// new CSV writer
-	writer := csv.NewWriter(buffer)
-	// write table head
-	if err := writer.Write(thead); err != nil {
-		return nil, fmt.Errorf("write table head error: %s", err)
-	}
+	tbodyLen := len(tbody)
 	// write tbody
 	for i := 0; i < tbodyLen; i++ {
 		var (
