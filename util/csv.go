@@ -29,11 +29,6 @@ import (
  * os.WriteFile("test.csv", buf.Bytes(), 0644)
  */
 func ExportCSV[T any](table T, tbody []T, isWriteHead bool) (*bytes.Buffer, error) {
-	var (
-		buffer = bytes.NewBuffer(nil)
-		writer = csv.NewWriter(buffer)
-		tag    = "csv"
-	)
 	// make sure 'table' is a Struct
 	tableVal := reflect.ValueOf(table)
 	if tableVal.Kind() == reflect.Ptr {
@@ -42,6 +37,11 @@ func ExportCSV[T any](table T, tbody []T, isWriteHead bool) (*bytes.Buffer, erro
 	if tableVal.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("table not struct")
 	}
+	var (
+		tag    = "csv"
+		buffer = bytes.NewBuffer(nil)
+		writer = csv.NewWriter(buffer)
+	)
 	// write head
 	if isWriteHead {
 		var (

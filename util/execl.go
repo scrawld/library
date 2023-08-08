@@ -24,15 +24,15 @@ import (
  * 	Tmp        int64  `excel:"-"`
  * }
  * tbody := []ReportExcel{
- * 	{"2006-01-02", 1, 2},
+ * 	{Dt: "2006-01-02", NewUsers: 1, LoginUsers: 2, Tmp: 1},
  * }
- * buf, err := ExportExcel(ReportExcel{}, tbody)
+ * buf, err := ExportExcel(ReportExcel{}, tbody, true)
  * if err != nil {
  * 	//
  * }
  * os.WriteFile("test.xlsx", buf.Bytes(), 0644)
  */
-func ExportExcel(table interface{}, tbody interface{}) (*bytes.Buffer, error) {
+func ExportExcel[T any](table T, tbody []T, isWriteHead bool) (*bytes.Buffer, error) {
 	// make sure 'table' is a Struct
 	tableVal := reflect.ValueOf(table)
 	if tableVal.Kind() == reflect.Ptr {
@@ -41,78 +41,78 @@ func ExportExcel(table interface{}, tbody interface{}) (*bytes.Buffer, error) {
 	if tableVal.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("table not struct")
 	}
-	// make sure 'tbody' is a Slice
-	tbodyVal := reflect.ValueOf(tbody)
-	if tbodyVal.Kind() != reflect.Slice {
-		return nil, fmt.Errorf("tbody not slice")
-	}
 	var (
-		tableFieldNum = tableVal.NumField()
-		tbodyLen      = tbodyVal.Len()
-		sheet         = "Sheet1"
-		headCol       = 1
+		tag   = "excel"
+		sheet = "Sheet1"
+		row   = 1
+		xlsx  = excelize.NewFile()
 	)
-
-	xlsx := excelize.NewFile()
 	index, err := xlsx.NewSheet(sheet)
 	if err != nil {
 		return nil, fmt.Errorf("new sheet error: %s", err)
 	}
-
-	// write table head
-	for i := 0; i < tableFieldNum; i++ {
-		t := tableVal.Type().Field(i)
-
-		if !ast.IsExported(t.Name) {
-			continue
-		}
-		head := t.Tag.Get("excel")
-		// is ignored field
-		if head == "-" {
-			continue
-		}
-		if len(head) == 0 {
-			head = t.Name
-		}
-		axis, err := excelize.CoordinatesToCellName(headCol, 1)
-		if err != nil {
-			return nil, fmt.Errorf("head to cell name error: %s", err)
-		}
-		headCol++
-		xlsx.SetCellValue(sheet, axis, head)
-	}
-
-	// write tbody
-	for i := 0; i < tbodyLen; i++ {
-		v := tbodyVal.Index(i)
-		if v.Kind() == reflect.Ptr {
-			v = v.Elem()
-		}
-		if v.Kind() != reflect.Struct {
-			return nil, fmt.Errorf("tbody element not struct")
-		}
-		num_field := v.NumField() // number of fields in struct
-		bodyCol := 1
-
-		for j := 0; j < num_field; j++ {
-			axis, err := excelize.CoordinatesToCellName(bodyCol, i+2)
-			if err != nil {
-				return nil, fmt.Errorf("tbody to cell name error: %s", err)
-			}
-			f := v.Field(j)
-			t := v.Type().Field(j)
+	// write head
+	if isWriteHead {
+		var (
+			tableFieldNum = tableVal.NumField()
+			headCol       = 1
+		)
+		// write table head
+		for i := 0; i < tableFieldNum; i++ {
+			t := tableVal.Type().Field(i)
 
 			if !ast.IsExported(t.Name) {
 				continue
 			}
-			head := t.Tag.Get("excel")
+			head := t.Tag.Get(tag)
+			// is ignored field
+			if head == "-" {
+				continue
+			}
+			if len(head) == 0 {
+				head = t.Name
+			}
+			axis, err := excelize.CoordinatesToCellName(headCol, row)
+			if err != nil {
+				return nil, fmt.Errorf("head to cell name error: %s", err)
+			}
+			headCol++
+			xlsx.SetCellValue(sheet, axis, head)
+		}
+		row++
+	}
+	tbodyLen := len(tbody)
+	// write tbody
+	for i := 0; i < tbodyLen; i++ {
+		var (
+			value   = reflect.ValueOf(tbody[i])
+			bodyCol = 1
+		)
+		if value.Kind() == reflect.Ptr {
+			value = value.Elem()
+		}
+		fieldNum := value.NumField() // number of fields in struct
+
+		for j := 0; j < fieldNum; j++ {
+			axis, err := excelize.CoordinatesToCellName(bodyCol, row)
+			if err != nil {
+				return nil, fmt.Errorf("tbody to cell name error: %s", err)
+			}
+			field := value.Field(j)
+			fieldT := value.Type().Field(j)
+
+			if !ast.IsExported(fieldT.Name) {
+				continue
+			}
+			head := fieldT.Tag.Get(tag)
 			// is ignored field
 			if head == "-" {
 				continue
 			}
 			bodyCol++
-			xlsx.SetCellValue(sheet, axis, f.Interface())
+			xlsx.SetCellValue(sheet, axis, field.Interface())
 		}
+		row++
 	}
 	xlsx.SetActiveSheet(index)
 
@@ -143,6 +143,7 @@ func ExportExcel(table interface{}, tbody interface{}) (*bytes.Buffer, error) {
  */
 func ReadExcelToStruct[T any](filename string, body T) ([]T, error) {
 	var (
+		tag           = "excel"
 		fieldIndexMap = map[string]int{}
 		bodyType      = reflect.TypeOf(body)
 	)
@@ -153,7 +154,7 @@ func ReadExcelToStruct[T any](filename string, body T) ([]T, error) {
 	// get field index
 	for i := 0; i < fieldNum; i++ {
 		f := bodyType.Field(i)
-		head := f.Tag.Get("excel")
+		head := f.Tag.Get(tag)
 		if head == "-" {
 			continue
 		}
