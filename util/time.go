@@ -131,11 +131,12 @@ func SplitYearWeek(combined int) (year, week int) {
 // GetWeekRange 获取时间范围内的周次 GetWeekRange(time.Unix(1671790242, 0), time.Unix(1672588800, 0)) return []int{202251, 202252, 202301}
 func GetWeekRange(st, et time.Time) []int {
 	var (
-		stZero       = time.Date(st.Year(), st.Month(), st.Day(), 0, 0, 0, 0, st.Location())
-		etZero       = time.Date(et.Year(), et.Month(), et.Day(), 0, 0, 0, 0, et.Location())
+		stZero = time.Date(st.Year(), st.Month(), st.Day(), 0, 0, 0, 0, st.Location())
+		etZero = time.Date(et.Year(), et.Month(), et.Day(), 0, 0, 0, 0, et.Location())
+		r      = []int{}
+
 		intervalDays = int(etZero.Sub(stZero).Hours() / 24) // 间隔天数
 		seen         = map[int]struct{}{}                   // 用于记录已经处理过的周次
-		r            = []int{}
 	)
 	for i := 0; i <= intervalDays; i++ {
 		week := GetWeek(stZero.AddDate(0, 0, i))
@@ -153,16 +154,11 @@ func GetDataHour(tm time.Time) (r int) {
 	return
 }
 
-// GetDataHourRange 获取日期范围 GetDataHourRange(1672012800, 1672027997) ruturn []int{2022122608 2022122609 2022122610 2022122611 2022122612}
-func GetDataHourRange(st, et int64) (r []int) {
-	if st > et {
-		return
-	}
+// GetDataHourRange 获取日期范围 GetDataHourRange(time.Unix(1672012800, 0), time.Unix(1672016400, 0)) ruturn []int{2022122608 2022122609}
+func GetDataHourRange(st, et time.Time) (r []int) {
 	var (
-		stTime   = time.Unix(st, 0)
-		etTime   = time.Unix(et, 0)
-		stZero   = time.Date(stTime.Year(), stTime.Month(), stTime.Day(), stTime.Hour(), 0, 0, 0, time.Local)
-		etZero   = time.Date(etTime.Year(), etTime.Month(), etTime.Day(), etTime.Hour(), 0, 0, 0, time.Local)
+		stZero   = time.Date(st.Year(), st.Month(), st.Day(), st.Hour(), 0, 0, 0, time.Local)
+		etZero   = time.Date(et.Year(), et.Month(), et.Day(), et.Hour(), 0, 0, 0, time.Local)
 		interval = etZero.Sub(stZero).Hours()
 	)
 	for i := 0; i <= int(interval); i++ {
@@ -173,4 +169,30 @@ func GetDataHourRange(st, et int64) (r []int) {
 		r = append(r, dh)
 	}
 	return
+}
+
+// GetMonth 获取月份 GetMonth(time.Now()) return 202308
+func GetMonth(tm time.Time) (r int) {
+	r, _ = strconv.Atoi(tm.Format("200601"))
+	return
+}
+
+// GetMonthRange 获取时间范围内的月份 GetMonthRange(time.Unix(1672016400, 0), time.Unix(1674694800, 0)) return [202212 202301]
+func GetMonthRange(st, et time.Time) []int {
+	var (
+		stZero = time.Date(st.Year(), st.Month(), st.Day(), 0, 0, 0, 0, st.Location())
+		etZero = time.Date(et.Year(), et.Month(), et.Day(), 0, 0, 0, 0, et.Location())
+		r      = []int{}
+
+		intervalDays = int(etZero.Sub(stZero).Hours() / 24) // 间隔天数
+		seen         = map[int]struct{}{}
+	)
+	for i := 0; i <= intervalDays; i++ {
+		month := GetMonth(stZero.AddDate(0, 0, i))
+		if _, ok := seen[month]; !ok {
+			seen[month] = struct{}{}
+			r = append(r, month)
+		}
+	}
+	return r
 }
