@@ -1,17 +1,10 @@
 package util
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 	"time"
 )
-
-// StartOfDay 获取指定日期零点时间
-func StartOfDay(t time.Time) (r time.Time) {
-	r = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
-	return
-}
 
 // GetDtByOffset 获取日期 GetDtByOffset(time.Now(), 0) return 20060102
 func GetDtByOffset(tm time.Time, offset int) (r int) {
@@ -23,6 +16,12 @@ func GetDtByOffset(tm time.Time, offset int) (r int) {
 func DtToTime(dt int) (r time.Time) {
 	tim, _ := time.ParseInLocation("20060102", strconv.Itoa(dt), time.Local)
 	return tim
+}
+
+// StartOfDay 获取指定日期零点时间
+func StartOfDay(t time.Time) (r time.Time) {
+	r = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+	return
 }
 
 // DaysBetween 计算两个时间之间的天数差异
@@ -116,20 +115,20 @@ func GetDateRange(st, et time.Time) []time.Time {
 	return r
 }
 
-// GetWeek 获取周次 Example: GetWeek(time.Unix(1672588800, 0)) return 202301
+// GetWeek 获取周次 GetWeek(time.Unix(1672588800, 0)) return 202301
 func GetWeek(tm time.Time) int {
 	year, week := tm.ISOWeek()
 	return year*100 + week
 }
 
-// SplitYearWeek 分割年和周次 Example: SplitYearWeek(202301) return 2023, 01
+// SplitYearWeek 分割年和周次 SplitYearWeek(202301) return 2023, 01
 func SplitYearWeek(combined int) (year, week int) {
 	year = combined / 100
 	week = combined % 100
 	return year, week
 }
 
-// GetWeekRange 获取时间范围内的周次 Example: GetWeekRange(time.Unix(1671790242, 0), time.Unix(1672588800, 0)) return []int{202251, 202252, 202301}
+// GetWeekRange 获取时间范围内的周次 GetWeekRange(time.Unix(1671790242, 0), time.Unix(1672588800, 0)) return []int{202251, 202252, 202301}
 func GetWeekRange(st, et time.Time) []int {
 	var (
 		stZero       = time.Date(st.Year(), st.Month(), st.Day(), 0, 0, 0, 0, st.Location())
@@ -148,72 +147,13 @@ func GetWeekRange(st, et time.Time) []int {
 	return r
 }
 
-// 日期范围 GetDtRange(20200101, 20200203) ruturn []int{20200101,20200102,20200103}
-func GetDtRange(start_dt, end_dt int) (r []int, err error) {
-	if start_dt > end_dt {
-		return
-	}
-	start_dt_str := strconv.Itoa(start_dt)
-	end_dt_str := strconv.Itoa(end_dt)
-
-	var tm_layout = "20060102"
-	start_tm, err := time.Parse(tm_layout, start_dt_str)
-	if err != nil {
-		err = fmt.Errorf("time parse(%s, %s) error(%s)", tm_layout, start_dt_str, err)
-		return
-	}
-	end_tm, err := time.Parse(tm_layout, end_dt_str)
-	if err != nil {
-		err = fmt.Errorf("time parse(%s, %s) error(%s)", tm_layout, end_dt_str, err)
-		return
-	}
-	dt_interval := (end_tm.Unix() - start_tm.Unix()) / (24 * 60 * 60)
-
-	for i := 0; i <= int(dt_interval); i++ {
-		dt_str := start_tm.AddDate(0, 0, i).Format(tm_layout)
-		dt, err := strconv.Atoi(dt_str)
-		if err != nil {
-			err = fmt.Errorf("strconv atoi(%s) error(%s)", dt_str, err)
-			return r, err
-		}
-		r = append(r, dt)
-	}
-	return
-}
-
-// max-min=days DtSub(20200302, 20200301) = 1
-func DtSub(max, min int) (r int, err error) {
-	if max < min {
-		return
-	}
-	max_dt_str := strconv.Itoa(max)
-	min_dt_str := strconv.Itoa(min)
-
-	var tm_layout = "20060102"
-
-	var max_tm time.Time
-	max_tm, err = time.Parse(tm_layout, max_dt_str)
-	if err != nil {
-		err = fmt.Errorf("time parse(%s, %s) error(%s)", tm_layout, max_dt_str, err)
-		return
-	}
-	var min_tm time.Time
-	min_tm, err = time.Parse(tm_layout, min_dt_str)
-	if err != nil {
-		err = fmt.Errorf("time parse(%s, %s) error(%s)", tm_layout, min_dt_str, err)
-		return
-	}
-	r = int(max_tm.Sub(min_tm).Hours() / 24)
-	return
-}
-
-// 获取日期到小时 GetDataHour(time.Now()) return 2022122609
+// GetDataHour 获取日期到小时 GetDataHour(time.Now()) return 2022122609
 func GetDataHour(tm time.Time) (r int) {
 	r, _ = strconv.Atoi(tm.Format("2006010215"))
 	return
 }
 
-// 获取日期范围 GetDataHourRange(1672012800, 1672027997) ruturn []int{2022122608 2022122609 2022122610 2022122611 2022122612}
+// GetDataHourRange 获取日期范围 GetDataHourRange(1672012800, 1672027997) ruturn []int{2022122608 2022122609 2022122610 2022122611 2022122612}
 func GetDataHourRange(st, et int64) (r []int) {
 	if st > et {
 		return
