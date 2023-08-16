@@ -116,6 +116,38 @@ func GetDateRange(st, et time.Time) []time.Time {
 	return r
 }
 
+// GetWeek 获取周次 Example: GetWeek(time.Unix(1672588800, 0)) return 202301
+func GetWeek(tm time.Time) int {
+	year, week := tm.ISOWeek()
+	return year*100 + week
+}
+
+// SplitYearWeek 分割年和周次 Example: SplitYearWeek(202301) return 2023, 01
+func SplitYearWeek(combined int) (year, week int) {
+	year = combined / 100
+	week = combined % 100
+	return year, week
+}
+
+// GetWeekRange 获取时间范围内的周次 Example: GetWeekRange(time.Unix(1671790242, 0), time.Unix(1672588800, 0)) return []int{202251, 202252, 202301}
+func GetWeekRange(st, et time.Time) []int {
+	var (
+		stZero       = time.Date(st.Year(), st.Month(), st.Day(), 0, 0, 0, 0, st.Location())
+		etZero       = time.Date(et.Year(), et.Month(), et.Day(), 0, 0, 0, 0, et.Location())
+		intervalDays = int(etZero.Sub(stZero).Hours() / 24) // 间隔天数
+		seen         = map[int]struct{}{}                   // 用于记录已经处理过的周次
+		r            = []int{}
+	)
+	for i := 0; i <= intervalDays; i++ {
+		week := GetWeek(stZero.AddDate(0, 0, i))
+		if _, ok := seen[week]; !ok {
+			seen[week] = struct{}{}
+			r = append(r, week)
+		}
+	}
+	return r
+}
+
 // 日期范围 GetDtRange(20200101, 20200203) ruturn []int{20200101,20200102,20200103}
 func GetDtRange(start_dt, end_dt int) (r []int, err error) {
 	if start_dt > end_dt {
@@ -199,37 +231,6 @@ func GetDataHourRange(st, et int64) (r []int) {
 			dh = GetDataHour(t)
 		)
 		r = append(r, dh)
-	}
-	return
-}
-
-// 获取周次 GetDtRange(time.Unix(1672588800, 0)) return 2023.1
-func GetWeek(tm time.Time) string {
-	year, week := tm.ISOWeek()
-	return fmt.Sprintf("%d.%d", year, week)
-}
-
-// 获取时间范围内的周次 GetWeekRange(1671790242, 1672588800) return []string{"2022.51", "2022.52", "2023.1"}
-func GetWeekRange(st, et int64) (r []string) {
-	if st > et {
-		return
-	}
-	var (
-		stTime   = time.Unix(st, 0)
-		etTime   = time.Unix(et, 0)
-		stZero   = time.Date(stTime.Year(), stTime.Month(), stTime.Day(), 0, 0, 0, 0, time.Local)
-		etZero   = time.Date(etTime.Year(), etTime.Month(), etTime.Day(), 0, 0, 0, 0, time.Local)
-		interval = etZero.Sub(stZero).Hours() / 24
-	)
-	m := map[string]byte{}
-	for i := 0; i <= int(interval); i++ {
-		t := stZero.AddDate(0, 0, i)
-		week := GetWeek(t)
-		if _, ok := m[week]; ok {
-			continue
-		}
-		m[week] = 0
-		r = append(r, week)
 	}
 	return
 }
