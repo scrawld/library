@@ -3,6 +3,7 @@ package ginx
 import (
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/shopspring/decimal"
@@ -16,6 +17,18 @@ func ValidateDecimalType(field reflect.Value) interface{} {
 		return value
 	}
 	return field
+}
+
+// ValidateCustomTimeType 将自定义Time转成time.Time进行校验
+func ValidateCustomTimeType(field reflect.Value) interface{} {
+	type CustomTime interface{ ToTime() time.Time }
+
+	fieldTime, ok := field.Interface().(CustomTime)
+	if ok {
+		value := fieldTime.ToTime()
+		return value
+	}
+	return field.Interface()
 }
 
 // ValidateTrimSpace 去除string两端空格
