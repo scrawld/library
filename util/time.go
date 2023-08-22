@@ -148,27 +148,30 @@ func GetWeekRange(st, et time.Time) []int {
 	return r
 }
 
-// GetDataHour 获取日期到小时 GetDataHour(time.Now()) return 2022122609
-func GetDataHour(tm time.Time) (r int) {
-	r, _ = strconv.Atoi(tm.Format("2006010215"))
-	return
-}
-
-// GetDataHourRange 获取日期范围 GetDataHourRange(time.Unix(1672012800, 0), time.Unix(1672016400, 0)) ruturn []int{2022122608 2022122609}
-func GetDataHourRange(st, et time.Time) (r []int) {
-	var (
-		stZero   = time.Date(st.Year(), st.Month(), st.Day(), st.Hour(), 0, 0, 0, time.Local)
-		etZero   = time.Date(et.Year(), et.Month(), et.Day(), et.Hour(), 0, 0, 0, time.Local)
-		interval = etZero.Sub(stZero).Hours()
-	)
-	for i := 0; i <= int(interval); i++ {
-		var (
-			t  = stZero.Add(time.Hour * time.Duration(i))
-			dh = GetDataHour(t)
-		)
-		r = append(r, dh)
+// GetWeekBounds 根据ISO周次获取特定周的第一天和最后一天 GetWeekBounds(202002) return 2020-01-06, 2020-01-12
+func GetWeekBounds(yearWeek int) (firstDay, lastDay time.Time) {
+	year, week := yearWeek/100, yearWeek%100
+	if year <= 0 || week < 1 || week > 53 {
+		return time.Time{}, time.Time{}
 	}
-	return
+	// Find the January 4th of the year, which is always in the same ISO week as the first day of the year.
+	jan4 := time.Date(year, time.January, 4, 0, 0, 0, 0, time.Local)
+	// Calculate the offset to the start of the ISO week.
+	offset := time.Duration((week-1)*7) * 24 * time.Hour
+	// Calculate the first day of the ISO week.
+	firstDayOfISOWeek := jan4.Add(offset)
+
+	// Calculate the weekday of the first day of the ISO week.
+	weekday := int(firstDayOfISOWeek.Weekday())
+	if weekday == 0 {
+		weekday = 7 // Convert Sunday to 7 (ISO weekday)
+	}
+
+	// Adjust the date to the beginning of the ISO week (Monday).
+	firstDay = firstDayOfISOWeek.Add(-time.Duration(weekday-1) * 24 * time.Hour)
+	lastDay = firstDay.Add(6 * 24 * time.Hour) // Last day of the week
+
+	return firstDay, lastDay
 }
 
 // GetMonth 获取月份 GetMonth(time.Now()) return 202308
@@ -195,4 +198,41 @@ func GetMonthRange(st, et time.Time) []int {
 		}
 	}
 	return r
+}
+
+// GetMonthBounds 获取给定月份的第一天和最后一天 GetMonthBounds(202308) return 2023-08-01, 2023-08-31
+func GetMonthBounds(yearMonth int) (firstDay, lastDay time.Time) {
+	year, month := yearMonth/100, yearMonth%100
+	if month < 1 || month > 12 {
+		return time.Time{}, time.Time{} // Invalid month
+	}
+
+	firstDay = time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
+	nextMonth := time.Date(year, time.Month(month)+1, 1, 0, 0, 0, 0, time.Local)
+	lastDay = nextMonth.Add(-time.Hour * 24)
+
+	return firstDay, lastDay
+}
+
+// GetDataHour 获取日期到小时 GetDataHour(time.Now()) return 2022122609
+func GetDataHour(tm time.Time) (r int) {
+	r, _ = strconv.Atoi(tm.Format("2006010215"))
+	return
+}
+
+// GetDataHourRange 获取日期范围 GetDataHourRange(time.Unix(1672012800, 0), time.Unix(1672016400, 0)) ruturn []int{2022122608 2022122609}
+func GetDataHourRange(st, et time.Time) (r []int) {
+	var (
+		stZero   = time.Date(st.Year(), st.Month(), st.Day(), st.Hour(), 0, 0, 0, time.Local)
+		etZero   = time.Date(et.Year(), et.Month(), et.Day(), et.Hour(), 0, 0, 0, time.Local)
+		interval = etZero.Sub(stZero).Hours()
+	)
+	for i := 0; i <= int(interval); i++ {
+		var (
+			t  = stZero.Add(time.Hour * time.Duration(i))
+			dh = GetDataHour(t)
+		)
+		r = append(r, dh)
+	}
+	return
 }
