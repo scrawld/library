@@ -115,7 +115,7 @@ func GetDateRange(st, et time.Time) []time.Time {
 	return r
 }
 
-// GetWeek 获取周次 GetWeekByOffset(time.Now(), 0) return 202301
+// GetWeekByOffset 获取周次 GetWeekByOffset(time.Now(), 0) return 202301
 func GetWeekByOffset(tm time.Time, offset int) int {
 	year, week := tm.AddDate(0, 0, offset*7).ISOWeek()
 	return year*100 + week
@@ -139,7 +139,7 @@ func GetWeekRange(st, et time.Time) []int {
 		seen         = map[int]struct{}{}                   // 用于记录已经处理过的周次
 	)
 	for i := 0; i <= intervalDays; i++ {
-		week := GetWeek(stZero.AddDate(0, 0, i))
+		week := GetWeekByOffset(stZero.AddDate(0, 0, i), 0)
 		if _, ok := seen[week]; !ok {
 			seen[week] = struct{}{}
 			r = append(r, week)
@@ -174,7 +174,7 @@ func GetWeekBounds(yearWeek int) (firstDay, lastDay time.Time) {
 	return firstDay, lastDay
 }
 
-// GetMonth 获取月份 GetMonth(time.Now(), 0) return 202308
+// GetMonthByOffset 获取月份 GetMonthByOffset(time.Now(), 0) return 202308
 func GetMonthByOffset(tm time.Time, offset int) (r int) {
 	r, _ = strconv.Atoi(tm.AddDate(0, offset, 0).Format("200601"))
 	return
@@ -191,7 +191,7 @@ func GetMonthRange(st, et time.Time) []int {
 		seen         = map[int]struct{}{}
 	)
 	for i := 0; i <= intervalDays; i++ {
-		month := GetMonth(stZero.AddDate(0, 0, i))
+		month := GetMonthByOffset(stZero.AddDate(0, 0, i), 0)
 		if _, ok := seen[month]; !ok {
 			seen[month] = struct{}{}
 			r = append(r, month)
