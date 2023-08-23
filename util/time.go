@@ -115,9 +115,9 @@ func GetDateRange(st, et time.Time) []time.Time {
 	return r
 }
 
-// GetWeek 获取周次 GetWeek(time.Unix(1672588800, 0)) return 202301
-func GetWeek(tm time.Time) int {
-	year, week := tm.ISOWeek()
+// GetWeek 获取周次 GetWeekByOffset(time.Now(), 0) return 202301
+func GetWeekByOffset(tm time.Time, offset int) int {
+	year, week := tm.AddDate(0, 0, offset*7).ISOWeek()
 	return year*100 + week
 }
 
@@ -174,9 +174,9 @@ func GetWeekBounds(yearWeek int) (firstDay, lastDay time.Time) {
 	return firstDay, lastDay
 }
 
-// GetMonth 获取月份 GetMonth(time.Now()) return 202308
-func GetMonth(tm time.Time) (r int) {
-	r, _ = strconv.Atoi(tm.Format("200601"))
+// GetMonth 获取月份 GetMonth(time.Now(), 0) return 202308
+func GetMonthByOffset(tm time.Time, offset int) (r int) {
+	r, _ = strconv.Atoi(tm.AddDate(0, offset, 0).Format("200601"))
 	return
 }
 
