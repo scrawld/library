@@ -14,13 +14,11 @@ func Logger() gin.HandlerFunc {
 		start := time.Now()
 		// Process request
 		ctx.Next()
-		// Stop timer
-		end := time.Now()
 
 		if v, exists := ctx.Get("logger"); exists {
 			l, ok := v.(*zaplog.TracingLogger)
 			if ok && l != nil {
-				l.Infof("code: %d, take: %s", ctx.Writer.Status(), end.Sub(start))
+				l.Infof("code: %d, take: %s", ctx.Writer.Status(), time.Since(start))
 			}
 		}
 	}
