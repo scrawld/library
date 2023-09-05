@@ -1,7 +1,9 @@
 package redis
 
 import (
+	"context"
 	"crypto/tls"
+	"errors"
 
 	"github.com/scrawld/library/config"
 
@@ -39,4 +41,11 @@ func GetClient() *redis.Client {
 		Init()
 	}
 	return Client
+}
+
+func Ping() (string, error) {
+	if Client == nil {
+		return "", errors.New("redis not init")
+	}
+	return Client.Ping(context.Background()).Result()
 }
