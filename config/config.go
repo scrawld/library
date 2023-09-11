@@ -27,11 +27,12 @@ type ServerConfig struct {
 	} `yaml:"redis"`
 
 	Rabbitmq struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-		Vhost    string `yaml:"vhost"`
+		Host         string `yaml:"host"`
+		Port         string `yaml:"port"`
+		Username     string `yaml:"username"`
+		Password     string `yaml:"password"`
+		Vhost        string `yaml:"vhost"`
+		TlsProtocols bool   `yaml:"tlsProtocols"`
 	} `yaml:"rabbitmq"`
 
 	// 内部服务地址配置
