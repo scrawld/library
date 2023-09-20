@@ -39,46 +39,33 @@ func reConnect() (err error) {
 	return
 }
 
-func (this *Amqpd) Close() error {
-	return this.channel.Close()
+func (ad *Amqpd) Close() error {
+	return ad.channel.Close()
 }
 
 // ExchangeDeclare
-func (this *Amqpd) ExchangeDeclare(name string, kind ExchangeType) (err error) {
-	return this.channel.ExchangeDeclare(name, string(kind), true, false, false, false, nil)
+func (ad *Amqpd) ExchangeDeclare(name string, kind ExchangeType) (err error) {
+	return ad.channel.ExchangeDeclare(name, string(kind), true, false, false, false, nil)
 }
 
 // Publish
-func (this *Amqpd) Publish(exchange, key string, body []byte) (err error) {
-	return this.channel.Publish(exchange, key, false, false,
+func (ad *Amqpd) Publish(exchange, key string, body []byte) (err error) {
+	return ad.channel.Publish(exchange, key, false, false,
 		amqp.Publishing{ContentType: "text/plain", Body: body})
 }
 
 // QueueDeclare
-func (this *Amqpd) QueueDeclare(name string) (err error) {
-	_, err = this.channel.QueueDeclare(name, true, false, false, false, nil)
+func (ad *Amqpd) QueueDeclare(name string) (err error) {
+	_, err = ad.channel.QueueDeclare(name, true, false, false, false, nil)
 	return
 }
 
 // QueueBind
-func (this *Amqpd) QueueBind(name, key, exchange string) (err error) {
-	return this.channel.QueueBind(name, key, exchange, false, nil)
+func (ad *Amqpd) QueueBind(name, key, exchange string) (err error) {
+	return ad.channel.QueueBind(name, key, exchange, false, nil)
 }
 
 // Consume
-func (this *Amqpd) Consume(queue, consumer string, handler func([]byte) error) (err error) {
-	var msgs <-chan amqp.Delivery
-	msgs, err = this.channel.Consume(queue, consumer, false, false, false, false, nil)
-	if err != nil {
-		return
-	}
-	for dely := range msgs {
-		err := handler(dely.Body)
-		if err != nil {
-			dely.Reject(true)
-			continue
-		}
-		dely.Ack(false)
-	}
-	return
+func (ad *Amqpd) Consume(queue, consumer string) (<-chan amqp.Delivery, error) {
+	return ad.channel.Consume(queue, consumer, false, false, false, false, nil)
 }
