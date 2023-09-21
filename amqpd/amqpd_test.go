@@ -1,9 +1,11 @@
 package amqpd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/scrawld/library/config"
 	"github.com/stretchr/testify/require"
@@ -24,12 +26,35 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestAmqpd(t *testing.T) {
-	for i := 0; i < 3000; i++ {
-		cli, err := New()
-		require.NoError(t, err, "new amqpd error i: %d", i)
+func TestAmqpdPublish(t *testing.T) {
+	cli, err := New()
+	require.NoError(t, err)
+	defer cli.Close()
 
+	for i := 0; i < 10000; i++ {
 		err = cli.Publish("test_exchanges", "", []byte(fmt.Sprintf("%d", i)))
 		require.NoError(t, err, "publish error i: %d", i)
 	}
+}
+
+func TestAmqpdConsumer(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	fn := func(msg []byte) error {
+		fmt.Println(string(msg))
+		return nil
+	}
+
+	ac := NewAmqpdConsumer()
+	ac.AddFunc("test_queues", "test-consumer", fn)
+
+	go func() {
+		time.Sleep(time.Millisecond * 100)
+		<-ac.Stop().Done()
+		fmt.Println("ac stop...")
+		cancel()
+	}()
+	ac.Start()
+
+	<-ctx.Done()
 }
