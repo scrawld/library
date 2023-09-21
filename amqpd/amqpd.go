@@ -16,6 +16,7 @@ func New() (r *Amqpd, err error) {
 		return
 	}
 	var chann *amqp.Channel
+	// In a situation where Close is not called, there can be up to 2047 simultaneous channels.
 	chann, err = Connection.Channel()
 	if err != nil {
 		err = fmt.Errorf("failed to open a channel %s", err)

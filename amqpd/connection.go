@@ -16,6 +16,7 @@ var (
 	Connection *amqp.Connection
 )
 
+// Init initializes the AMQP connection to RabbitMQ.
 func Init() (err error) {
 	mutex.Lock()
 	defer mutex.Unlock()
