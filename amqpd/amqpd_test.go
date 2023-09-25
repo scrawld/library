@@ -45,7 +45,8 @@ func TestAmqpdConsumer(t *testing.T) {
 		return nil
 	}
 
-	ac := NewAmqpdConsumer()
+	ac, err := NewAmqpdConsumer()
+	require.NoError(t, err)
 	ac.AddFunc("test_queues", "test-consumer", fn)
 
 	go func() {
