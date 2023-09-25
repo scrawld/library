@@ -8,9 +8,6 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
-	"time"
-
-	"github.com/streadway/amqp"
 )
 
 var consumerSeq uint64
@@ -35,9 +32,6 @@ func NewAmqpdConsumer() (*AmqpdConsumer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("amqpd connect err, %s", err)
 	}
-	go func() {
-		fmt.Printf("closing: %s\n", <-cli.NotifyClose(make(chan *amqp.Error)))
-	}()
 	return &AmqpdConsumer{
 		entries:   make(map[string]*entry),
 		cli:       cli,
@@ -78,14 +72,10 @@ func (ac *AmqpdConsumer) Start() {
 
 // run starts an asynchronous consumer for a specified queue.
 func (ac *AmqpdConsumer) run(csr string, e *entry) {
-	for ac.running {
-		err := ac.consume(e.Queue, csr, e.Handler)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "run error: %s\n", err)
-			time.Sleep(time.Second * 5)
-			return
-		}
-		time.Sleep(time.Second)
+	err := ac.consume(e.Queue, csr, e.Handler)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "run error: %s\n", err)
+		return
 	}
 	return
 }
@@ -141,6 +131,7 @@ func (ac *AmqpdConsumer) Stop() context.Context {
 			ac.cli.Cancel(csr)
 		}
 		ac.jobWaiter.Wait()
+		ac.cli.Close()
 		cancel()
 	}()
 	return ctx
