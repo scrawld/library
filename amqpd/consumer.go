@@ -3,11 +3,12 @@ package amqpd
 import (
 	"context"
 	"fmt"
-	"os"
+	"log"
 	"runtime"
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 var consumerSeq uint64
@@ -72,10 +73,14 @@ func (ac *AmqpdConsumer) Start() {
 
 // run starts an asynchronous consumer for a specified queue.
 func (ac *AmqpdConsumer) run(csr string, e *entry) {
-	err := ac.consume(e.Queue, csr, e.Handler)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "run error: %s\n", err)
-		return
+	for ac.running {
+		err := ac.consume(e.Queue, csr, e.Handler)
+		if err != nil {
+			log.Printf("amqpd-consumer: run error: %s\n", err)
+			time.Sleep(time.Second * 20)
+			continue
+		}
+		time.Sleep(time.Second * 20)
 	}
 	return
 }
@@ -110,7 +115,7 @@ func (ac *AmqpdConsumer) runWithRecovery(f func([]byte) error, body []byte) erro
 			const size = 64 << 10
 			buf := make([]byte, size)
 			buf = buf[:runtime.Stack(buf, false)]
-			fmt.Fprintf(os.Stderr, "amqpd: panic running job: %v\n%s\n", r, buf)
+			log.Printf("amqpd-consumer: panic running job: %v\n%s\n", r, buf)
 		}
 	}()
 	return f(body)

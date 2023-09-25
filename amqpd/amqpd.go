@@ -1,43 +1,74 @@
 package amqpd
 
 import (
+	"errors"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/streadway/amqp"
 )
 
 type Amqpd struct {
 	channel *amqp.Channel
+	stop    chan struct{}
 }
 
-func New() (r *Amqpd, err error) {
-	if err = reConnect(); err != nil {
-		err = fmt.Errorf("re connect: %s", err)
-		return
+func New() (*Amqpd, error) {
+	ad := &Amqpd{
+		stop: make(chan struct{}),
 	}
-	var chann *amqp.Channel
+	if err := ad.initChannel(); err != nil {
+		return nil, err
+	}
+	go ad.redial()
+	return ad, nil
+}
+
+// initChannel initializes the AMQP channel.
+func (ad *Amqpd) initChannel() error {
+	if Connection == nil {
+		return errors.New("amqpd not initialized")
+	}
+	if Connection.IsClosed() {
+		// amqpd connection
+		if err := Init(); err != nil {
+			return fmt.Errorf("amqpd connection error: %s", err)
+		}
+	}
+	if ad.channel != nil {
+		ad.channel.Close()
+	}
 	// In a situation where Close is not called, there can be up to 2047 simultaneous channels.
-	chann, err = Connection.Channel()
+	channel, err := Connection.Channel()
 	if err != nil {
-		err = fmt.Errorf("failed to open a channel %s", err)
-		return
+		return fmt.Errorf("open channel error: %s", err)
 	}
-	r = &Amqpd{channel: chann}
-	return
+	ad.channel = channel
+	return nil
 }
 
-func reConnect() (err error) {
-	for i := 0; i < 5; i++ {
-		if Connection != nil && !Connection.IsClosed() {
+// redial monitors the channel and re-establishes it if it's closed.
+func (ad *Amqpd) redial() {
+	printf := func(format string, v ...any) { log.Printf("amqpd-redial: "+format, v...) }
+	for {
+		select {
+		case <-ad.stop:
+			printf("stop")
 			return
+		case closeErr := <-ad.channel.NotifyClose(make(chan *amqp.Error)):
+			printf("channel closing: %s", closeErr)
+			for {
+				if err := ad.initChannel(); err != nil {
+					printf("init channel error: %s", err)
+					time.Sleep(time.Second * 10)
+					continue
+				}
+				printf("channel success")
+				break
+			}
 		}
-		err = Init()
-		if err == nil {
-			return
-		}
-		err = fmt.Errorf("amqpd connection error: %s", err)
 	}
-	return
 }
 
 // Cancel stops deliveries to the consumer chan established in Channel.Consume and identified by consumer.
@@ -46,6 +77,7 @@ func (ad *Amqpd) Cancel(consumer string) error {
 }
 
 func (ad *Amqpd) Close() error {
+	ad.stop <- struct{}{}
 	return ad.channel.Close()
 }
 
