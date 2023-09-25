@@ -40,6 +40,15 @@ func reConnect() (err error) {
 	return
 }
 
+func (ad *Amqpd) NotifyClose(c chan *amqp.Error) chan *amqp.Error {
+	return ad.channel.NotifyClose(c)
+}
+
+// Cancel stops deliveries to the consumer chan established in Channel.Consume and identified by consumer.
+func (ad *Amqpd) Cancel(consumer string) error {
+	return ad.channel.Cancel(consumer, false)
+}
+
 func (ad *Amqpd) Close() error {
 	return ad.channel.Close()
 }
