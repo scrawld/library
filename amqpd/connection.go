@@ -67,13 +67,13 @@ func Close() error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if Connection != nil {
-		if err := Connection.Close(); err != nil {
+	if Default != nil {
+		if err := Default.Close(); err != nil {
 			return err
 		}
 	}
-	if Default != nil {
-		if err := Default.Close(); err != nil {
+	if Connection != nil {
+		if err := Connection.Close(); err != nil {
 			return err
 		}
 	}
