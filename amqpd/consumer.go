@@ -136,7 +136,7 @@ func (ac *AmqpdConsumer) Stop() context.Context {
 			ac.cli.Cancel(csr)
 		}
 		ac.jobWaiter.Wait()
-		ac.cli.Close()
+		ac.cli.Close() // This AmqpdConsumer cannot continue to be used after the channel is closed.
 		cancel()
 	}()
 	return ctx

@@ -51,14 +51,12 @@ func (ad *Amqpd) redial() {
 	for {
 		select {
 		case <-ad.stop:
-			printf("stop")
 			return
 		case closeErr := <-ad.channel.NotifyClose(make(chan *amqp.Error)):
 			printf("channel closing: %s", closeErr)
 			for {
 				select {
 				case <-ad.stop:
-					printf("stop")
 					return
 				default:
 				}
