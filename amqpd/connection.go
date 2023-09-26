@@ -14,6 +14,7 @@ import (
 var (
 	mutex      sync.Mutex
 	Connection *amqp.Connection
+	Default    *Amqpd
 )
 
 // Init initializes the AMQP connection to RabbitMQ.
@@ -47,13 +48,34 @@ func Init() (err error) {
 		)
 		Connection, err = amqp.DialConfig(url, amqpConfig)
 		if err != nil {
-			err = fmt.Errorf("failed amqpd connect %s, %s", err, url)
+			err = fmt.Errorf("amqp dial error: %s, %s", err, url)
 			return
 		}
 	}
-	if err != nil {
-		err = fmt.Errorf("failed amqpd connect %s", err)
-		return
+	if Default == nil {
+		Default, err = New()
+		if err != nil {
+			err = fmt.Errorf("open default channel error: %s", err)
+			return
+		}
 	}
 	return
+}
+
+// Close closes the AMQP connections and channels if they are non-nil.
+func Close() error {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if Connection != nil {
+		if err := Connection.Close(); err != nil {
+			return err
+		}
+	}
+	if Default != nil {
+		if err := Default.Close(); err != nil {
+			return err
+		}
+	}
+	return nil
 }

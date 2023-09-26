@@ -13,6 +13,7 @@ type Amqpd struct {
 	stop    chan struct{}
 }
 
+// New creates a new Amqpd instance and initializes its channel.
 func New() (*Amqpd, error) {
 	ad := &Amqpd{
 		stop: make(chan struct{}),
@@ -24,7 +25,7 @@ func New() (*Amqpd, error) {
 	return ad, nil
 }
 
-// initChannel initializes the AMQP channel.
+// initChannel initializes the AMQP channel for the Amqpd instance.
 func (ad *Amqpd) initChannel() error {
 	if Connection == nil || Connection.IsClosed() {
 		// amqpd connection
@@ -79,34 +80,34 @@ func (ad *Amqpd) Cancel(consumer string) error {
 	return ad.channel.Cancel(consumer, false)
 }
 
+// Close closes the Amqpd instance's channel and stops the redialing process.
 func (ad *Amqpd) Close() error {
 	ad.stop <- struct{}{}
 	return ad.channel.Close()
 }
 
-// ExchangeDeclare
-func (ad *Amqpd) ExchangeDeclare(name string, kind ExchangeType) (err error) {
+// DeclareExchange declares an exchange on the AMQP server with the given name and type.
+func (ad *Amqpd) ExchangeDeclare(name string, kind ExchangeType) error {
 	return ad.channel.ExchangeDeclare(name, string(kind), true, false, false, false, nil)
 }
 
-// Publish
-func (ad *Amqpd) Publish(exchange, key string, body []byte) (err error) {
+// Publish publishes a message to the specified exchange with the given routing key.
+func (ad *Amqpd) Publish(exchange, key string, body []byte) error {
 	return ad.channel.Publish(exchange, key, false, false,
 		amqp.Publishing{ContentType: "text/plain", Body: body})
 }
 
-// QueueDeclare
-func (ad *Amqpd) QueueDeclare(name string) (err error) {
-	_, err = ad.channel.QueueDeclare(name, true, false, false, false, nil)
-	return
+// QueueDeclare declares a queue with the given name on the AMQP server.
+func (ad *Amqpd) QueueDeclare(name string) (amqp.Queue, error) {
+	return ad.channel.QueueDeclare(name, true, false, false, false, nil)
 }
 
-// QueueBind
-func (ad *Amqpd) QueueBind(name, key, exchange string) (err error) {
+// QueueBind binds a queue to an exchange with a routing key.
+func (ad *Amqpd) QueueBind(name, key, exchange string) error {
 	return ad.channel.QueueBind(name, key, exchange, false, nil)
 }
 
-// Consume
+// Consume starts consuming messages from a queue identified by its name.
 func (ad *Amqpd) Consume(queue, consumer string) (<-chan amqp.Delivery, error) {
 	return ad.channel.Consume(queue, consumer, false, false, false, false, nil)
 }
