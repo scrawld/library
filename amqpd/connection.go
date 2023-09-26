@@ -8,7 +8,7 @@ import (
 
 	"github.com/scrawld/library/config"
 
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var (

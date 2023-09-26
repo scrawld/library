@@ -1,12 +1,11 @@
 package amqpd
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type Amqpd struct {
@@ -27,10 +26,7 @@ func New() (*Amqpd, error) {
 
 // initChannel initializes the AMQP channel.
 func (ad *Amqpd) initChannel() error {
-	if Connection == nil {
-		return errors.New("amqpd not initialized")
-	}
-	if Connection.IsClosed() {
+	if Connection == nil || Connection.IsClosed() {
 		// amqpd connection
 		if err := Init(); err != nil {
 			return fmt.Errorf("amqpd connection error: %s", err)
@@ -59,12 +55,19 @@ func (ad *Amqpd) redial() {
 		case closeErr := <-ad.channel.NotifyClose(make(chan *amqp.Error)):
 			printf("channel closing: %s", closeErr)
 			for {
+				select {
+				case <-ad.stop:
+					printf("stop")
+					return
+				default:
+				}
+				printf("reconnecting...")
 				if err := ad.initChannel(); err != nil {
-					printf("init channel error: %s", err)
+					printf("reconnect error: %s", err)
 					time.Sleep(time.Second * 10)
 					continue
 				}
-				printf("channel success")
+				printf("channel re-established")
 				break
 			}
 		}

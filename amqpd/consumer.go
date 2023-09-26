@@ -77,10 +77,10 @@ func (ac *AmqpdConsumer) run(csr string, e *entry) {
 		err := ac.consume(e.Queue, csr, e.Handler)
 		if err != nil {
 			log.Printf("amqpd-consumer: run error: %s\n", err)
-			time.Sleep(time.Second * 20)
+			time.Sleep(time.Second * 15)
 			continue
 		}
-		time.Sleep(time.Second * 20)
+		time.Sleep(time.Second * 15)
 	}
 	return
 }
