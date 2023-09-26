@@ -109,6 +109,7 @@ func (ac *AmqpdConsumer) consume(queue, consumer string, handler func([]byte) er
 	return nil
 }
 
+// runWithRecovery is a utility method for running a function 'f' with panic recovery.
 func (ac *AmqpdConsumer) runWithRecovery(f func([]byte) error, body []byte) error {
 	defer func() {
 		if r := recover(); r != nil {
@@ -121,8 +122,18 @@ func (ac *AmqpdConsumer) runWithRecovery(f func([]byte) error, body []byte) erro
 	return f(body)
 }
 
-// Stop stops the AmqpdConsumer, waits for all jobs to complete, and closes AMQP connections.
-// A context is returned so the caller can wait for running jobs to complete.
+// Stop stops the AmqpdConsumer, which includes canceling all active consumers,
+// waiting for the consumer jobs to complete, and closing the AMQP channel.
+// It returns a context.Context that is canceled when the AmqpdConsumer has
+// completed its shutdown process. Once the channel is closed, this AmqpdConsumer
+// cannot be used for further operations.
+//
+// This method should be called when you want to gracefully shut down the AmqpdConsumer.
+//
+// Example:
+//
+//	ctx := amqpdConsumer.Stop()
+//	<-ctx.Done() // Wait for the AmqpdConsumer to complete its shutdown.
 func (ac *AmqpdConsumer) Stop() context.Context {
 	ac.runningMu.Lock()
 	defer ac.runningMu.Unlock()
@@ -130,14 +141,18 @@ func (ac *AmqpdConsumer) Stop() context.Context {
 	if ac.running {
 		ac.running = false
 	}
+
+	// Create a new context and cancel function
 	ctx, cancel := context.WithCancel(context.Background())
+
+	// Start a goroutine to cancel all active consumers
 	go func() {
 		for csr := range ac.entries {
 			ac.cli.Cancel(csr)
 		}
-		ac.jobWaiter.Wait()
-		ac.cli.Close() // This AmqpdConsumer cannot continue to be used after the channel is closed.
-		cancel()
+		ac.jobWaiter.Wait() // Wait for consumer jobs to complete
+		ac.cli.Close()      // Close the AMQP channel
+		cancel()            // Cancel the context once shutdown is complete
 	}()
 	return ctx
 }
