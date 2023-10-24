@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/shopspring/decimal"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -218,6 +219,15 @@ func ReadExcelToStruct[T any](filename string, body T) ([]T, error) {
 					return nil, fmt.Errorf("row(%d) col(%d) head(%s) strconv.Atoi(%s) error: %s", rowKey+1, colKey+1, h, colCell, err)
 				}
 				fieldVal.SetInt(int64(v))
+			case reflect.Struct:
+				switch fieldVal.Interface().(type) {
+				case decimal.Decimal:
+					v, err := decimal.NewFromString(colCell)
+					if err != nil {
+						return nil, fmt.Errorf("row(%d) col(%d) head(%s) decimal.NewFromString(%s) error: %s", rowKey+1, colKey+1, h, colCell, err)
+					}
+					fieldVal.Set(reflect.ValueOf(v))
+				}
 			}
 		}
 		r = append(r, *t)
