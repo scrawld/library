@@ -45,14 +45,18 @@ func Get(url string, respBody interface{}, options ...ClientOptionFunc) (r *http
  * )
  */
 func Post(url string, body interface{}, respBody interface{}, options ...ClientOptionFunc) (r *http.Response, err error) {
-	options = append(options, SetMethod("POST"), SetBody(body))
+	options = append(options, SetMethod("POST"))
+	if body != nil {
+		options = append(options, SetBody(body))
+	}
 	return Call(url, respBody, options...)
 }
 
 // PostForm
 func PostForm(url string, body url.Values, respBody interface{}, options ...ClientOptionFunc) (r *http.Response, err error) {
-	options = append(options, SetMethod("POST"), SetBody(body),
-		SetHeader(map[string]string{"Content-Type": "application/x-www-form-urlencoded"}),
-	)
+	options = append(options, SetMethod("POST"), SetHeader(map[string]string{"Content-Type": "application/x-www-form-urlencoded"}))
+	if body != nil {
+		options = append(options, SetBody(body))
+	}
 	return Call(url, respBody, options...)
 }
