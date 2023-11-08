@@ -61,6 +61,9 @@ func (v *defaultValidator) ValidateStruct(obj any) error {
 	case reflect.Struct:
 		return v.validateStruct(obj)
 	case reflect.Slice, reflect.Array:
+		if value.Kind() == reflect.Ptr {
+			value = value.Elem()
+		}
 		count := value.Len()
 		validateRet := make(SliceValidationError, 0)
 		for i := 0; i < count; i++ {
