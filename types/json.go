@@ -38,7 +38,9 @@ func (t *Date) UnmarshalJSON(input []byte) error {
 
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (t *Date) UnmarshalText(text []byte) error {
-	//tim, err := time.Parse("2006-01-02", string(text))
+	if len(text) == 0 {
+		return nil
+	}
 	tim, err := time.ParseInLocation("2006-01-02", strings.TrimSpace(string(text)), time.Local)
 	if err != nil {
 		return fmt.Errorf("unmarshal time error: %s", err)
@@ -72,7 +74,9 @@ func (t *Time) UnmarshalJSON(input []byte) error {
 
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (t *Time) UnmarshalText(text []byte) error {
-	//tim, err := time.Parse("2006-01-02 15:04:05", string(text))
+	if len(text) == 0 {
+		return nil
+	}
 	tim, err := time.ParseInLocation("2006-01-02 15:04:05", strings.TrimSpace(string(text)), time.Local)
 	if err != nil {
 		return fmt.Errorf("unmarshal time error: %s", err)
