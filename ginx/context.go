@@ -24,7 +24,7 @@ type Context struct {
  *
  * import (
  * 	_ "github.com/scrawld/library/ginx"
- * 	ginxMiddleware "gva_server/library/ginx/middleware"
+ * 	ginxMiddleware "github.com/scrawld/library/library/ginx/middleware"
  * )
  *
  * router := gin.Default()
