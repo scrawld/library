@@ -62,3 +62,27 @@ func SplitRedPacket(packetCount int64, totalAmount, minAmount, maxAmount decimal
 	}
 	return packets, nil
 }
+
+// GenerateRandomLetters 生成指定长度的随机字母的随机码(不包含o/O/I/l)
+func GenerateRandomLetters(length uint) string {
+	rand.Seed(time.Now().UnixNano())
+	charset := "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+
+	code := make([]byte, length)
+	for i := range code {
+		code[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(code)
+}
+
+// GenerateRandomCode 生成指定长度的随机字母和数字的随机码(不包含o/O/I/l和0)
+func GenerateRandomCode(length uint) string {
+	rand.Seed(time.Now().UnixNano())
+	charset := "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789"
+
+	code := make([]byte, length)
+	for i := range code {
+		code[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(code)
+}
