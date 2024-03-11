@@ -65,8 +65,13 @@ func (ac *AmqpdConsumer) Start() {
 	}
 	ac.running = true
 
-	for csr, entry := range ac.entries {
-		go ac.run(csr, entry)
+	for k, v := range ac.entries {
+		ac.jobWaiter.Add(1)
+
+		go func(c string, e *entry) {
+			defer ac.jobWaiter.Done()
+			ac.run(c, e)
+		}(k, v)
 	}
 	return
 }
@@ -95,16 +100,12 @@ func (ac *AmqpdConsumer) consume(queue, consumer string, handler func([]byte) er
 		return fmt.Errorf("amqpd consume err, %s", err)
 	}
 	for dely := range deliveries {
-		ac.jobWaiter.Add(1)
-
 		err := ac.runWithRecovery(handler, dely.Body)
 		if err != nil {
 			dely.Reject(true)
 			continue
 		}
 		dely.Ack(false)
-
-		ac.jobWaiter.Done()
 	}
 	return nil
 }
