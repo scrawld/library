@@ -80,6 +80,9 @@ func (ac *AmqpdConsumer) run(csr string, e *entry) {
 			time.Sleep(time.Second * 15)
 			continue
 		}
+		if !ac.running {
+			break
+		}
 		time.Sleep(time.Second * 15)
 	}
 	return
@@ -92,9 +95,6 @@ func (ac *AmqpdConsumer) consume(queue, consumer string, handler func([]byte) er
 		return fmt.Errorf("amqpd consume err, %s", err)
 	}
 	for dely := range deliveries {
-		if !ac.running {
-			break
-		}
 		ac.jobWaiter.Add(1)
 
 		err := ac.runWithRecovery(handler, dely.Body)
