@@ -33,7 +33,7 @@ func (ad *Amqpd) initChannel() error {
 			return fmt.Errorf("amqpd connection error: %s", err)
 		}
 	}
-	if ad.channel != nil {
+	if ad.channel != nil && !ad.channel.IsClosed() {
 		ad.channel.Close()
 	}
 	// In a situation where Close is not called, there can be up to 2047 simultaneous channels.

@@ -97,7 +97,7 @@ func (ac *AmqpdConsumer) run(csr string, e *entry) {
 func (ac *AmqpdConsumer) consume(queue, consumer string, handler func([]byte) error) error {
 	deliveries, err := ac.cli.Consume(queue, consumer)
 	if err != nil {
-		return fmt.Errorf("amqpd consume err, %s", err)
+		return fmt.Errorf("amqpd consume err: %s", err)
 	}
 	for dely := range deliveries {
 		err := ac.runWithRecovery(handler, dely.Body)

@@ -13,9 +13,9 @@ import (
 
 func TestMain(m *testing.M) {
 	config.Get().Rabbitmq.Host = "127.0.0.1"
-	config.Get().Rabbitmq.Port = "5671"
+	config.Get().Rabbitmq.Port = "5672"
 	config.Get().Rabbitmq.Username = "guest"
-	config.Get().Rabbitmq.Password = "12345678"
+	config.Get().Rabbitmq.Password = "guest"
 	config.Get().Rabbitmq.Vhost = ""
 	config.Get().Rabbitmq.TlsProtocols = false
 
