@@ -7,17 +7,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/scrawld/library/config"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
-	config.Get().Rabbitmq.Host = "127.0.0.1"
-	config.Get().Rabbitmq.Port = "5672"
-	config.Get().Rabbitmq.Username = "guest"
-	config.Get().Rabbitmq.Password = "guest"
-	config.Get().Rabbitmq.Vhost = ""
-	config.Get().Rabbitmq.TlsProtocols = false
+	GlobalConfig = Config{
+		Host:         "127.0.0.1",
+		Port:         "5672",
+		Username:     "guest",
+		Password:     "guest",
+		Vhost:        "",
+		TlsProtocols: false,
+	}
 
 	if err := Init(); err != nil {
 		fmt.Printf("init error: %s\n", err)

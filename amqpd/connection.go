@@ -6,15 +6,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/scrawld/library/config"
-
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+type Config struct {
+	Host         string `json:"host"`         // RabbitMQ 主机地址
+	Port         string `json:"port"`         // RabbitMQ 端口号
+	Username     string `json:"username"`     // RabbitMQ 用户名
+	Password     string `json:"password"`     // RabbitMQ 密码
+	Vhost        string `json:"vhost"`        // RabbitMQ 虚拟主机
+	TlsProtocols bool   `json:"tlsProtocols"` // 是否启用 TLS 协议
+}
+
 var (
-	mutex      sync.Mutex
-	Connection *amqp.Connection
-	Default    *Amqpd
+	GlobalConfig Config // 全局配置变量
+	mutex        sync.Mutex
+	Connection   *amqp.Connection
+	Default      *Amqpd
 )
 
 // Init initializes the AMQP connection to RabbitMQ.
@@ -30,7 +38,7 @@ func Init() (err error) {
 			}
 			protocol string
 		)
-		if config.Get().Rabbitmq.TlsProtocols {
+		if GlobalConfig.TlsProtocols {
 			protocol = "amqps"
 			amqpConfig.TLSClientConfig = &tls.Config{
 				MinVersion: tls.VersionTLS12,
@@ -40,11 +48,11 @@ func Init() (err error) {
 		}
 		url := fmt.Sprintf("%s://%s:%s@%s:%s/%s",
 			protocol,
-			config.Get().Rabbitmq.Username,
-			config.Get().Rabbitmq.Password,
-			config.Get().Rabbitmq.Host,
-			config.Get().Rabbitmq.Port,
-			config.Get().Rabbitmq.Vhost,
+			GlobalConfig.Username,
+			GlobalConfig.Password,
+			GlobalConfig.Host,
+			GlobalConfig.Port,
+			GlobalConfig.Vhost,
 		)
 		Connection, err = amqp.DialConfig(url, amqpConfig)
 		if err != nil {
