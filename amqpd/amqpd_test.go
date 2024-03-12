@@ -12,12 +12,12 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	config.Get().Rabbitmq.Host = "b-030fdd34-d008-446e-bbee-8c3bb6bec241.mq.ap-southeast-1.amazonaws.com"
+	config.Get().Rabbitmq.Host = "127.0.0.1"
 	config.Get().Rabbitmq.Port = "5671"
-	config.Get().Rabbitmq.Username = "bra88"
-	config.Get().Rabbitmq.Password = "TdSoB_e2Lnpzsfl5AzGp9bhHchdzsrjg"
-	config.Get().Rabbitmq.Vhost = "bra88"
-	config.Get().Rabbitmq.TlsProtocols = true
+	config.Get().Rabbitmq.Username = "guest"
+	config.Get().Rabbitmq.Password = "12345678"
+	config.Get().Rabbitmq.Vhost = ""
+	config.Get().Rabbitmq.TlsProtocols = false
 
 	if err := Init(); err != nil {
 		fmt.Printf("init error: %s\n", err)
