@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -59,11 +60,11 @@ func ReadInConfig(path string) error {
 	v.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("config file changed:", e.Name)
 		if err := v.Unmarshal(config); err != nil {
-			fmt.Println(err)
+			log.Printf("config change: unmarshal error: %s", err)
 		}
 	})
 	if err := v.Unmarshal(config); err != nil {
-		fmt.Println(err)
+		return fmt.Errorf("unmarshal error: %s", err)
 	}
 	return nil
 }
