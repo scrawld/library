@@ -40,6 +40,15 @@ type ServerConfig struct {
 	InnerServer map[string]string `yaml:"inner-server"`
 }
 
+// mysql
+type Mysql struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	DBName   string `yaml:"dbName"`
+}
+
 var config = &ServerConfig{}
 
 func Get() *ServerConfig {
