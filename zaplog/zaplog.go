@@ -37,12 +37,12 @@ func (l *TracingLogger) WithOptions(opts ...zap.Option) *TracingLogger {
 }
 
 func (l *TracingLogger) AddCallerSkip(skip int) *TracingLogger {
-	return l.WithOptions(zap.AddCallerSkip(skip))
+	return l.clone().WithOptions(zap.AddCallerSkip(skip))
 }
 
 // 关闭行号
 func (l *TracingLogger) CloseCaller() *TracingLogger {
-	return l.WithOptions(zap.WithCaller(false))
+	return l.clone().WithOptions(zap.WithCaller(false))
 }
 
 func (l *TracingLogger) Named(name string) *TracingLogger {
