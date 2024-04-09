@@ -35,7 +35,7 @@ type Context struct {
  *	UserName  string   `json:"userName" binding:"required"`
  * }
  *
- * func (this *UserController) Index(c *gin.Context) {
+ * func (cont *UserController) Index(c *gin.Context) {
  *	p := &UserIndexReq{}
  *	ctx, ok := ginx.NewContext(c, ginx.UserTypeAny, p)
  * 	if !ok {
@@ -43,8 +43,8 @@ type Context struct {
  * 	}
  * 	r := UserIndexResp{}
  *
- * 	c.Log.Infof("userId %s", p.UserId)
- * 	c.Log.Errorf("userId %s", p.UserId)
+ * 	ctx.Log.Infof("userId %s", p.UserId)
+ * 	ctx.Log.Errorf("userId %s", p.UserId)
  *
  * 	// ...
  * 	if err != nil {
@@ -81,15 +81,15 @@ func NewContext(ctx *gin.Context, utype UserType, params interface{}) (r *Contex
 	return
 }
 
-func (this *Context) ShouldBind(obj interface{}) error {
+func (c *Context) ShouldBind(obj interface{}) error {
 	if obj == nil {
 		return nil
 	}
-	return this.ctx.ShouldBind(obj)
+	return c.ctx.ShouldBind(obj)
 }
 
-func (this *Context) ClientIP() string {
-	return this.ctx.ClientIP()
+func (c *Context) ClientIP() string {
+	return c.ctx.ClientIP()
 }
 
 /************ Render **************/
@@ -100,17 +100,17 @@ type RenderStruct struct {
 }
 
 // WriteExcel 将excel文件返回
-func (this *Context) WriteExcel(h []byte, filename string) {
+func (c *Context) WriteExcel(h []byte, filename string) {
 	if len(h) == 0 {
 		return
 	}
-	this.ctx.Header("Content-Type", "application/vnd.ms-excel;charset=utf8")
-	this.ctx.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s.xlsx"`, url.QueryEscape(filename)))
-	this.ctx.Writer.Write(h)
+	c.ctx.Header("Content-Type", "application/vnd.ms-excel;charset=utf8")
+	c.ctx.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s.xlsx"`, url.QueryEscape(filename)))
+	c.ctx.Writer.Write(h)
 }
 
 // Render 成功返回并打印日志
-func (this *Context) Render(data interface{}) {
+func (c *Context) Render(data interface{}) {
 	if data == nil {
 		data = []string{}
 	}
@@ -118,12 +118,12 @@ func (this *Context) Render(data interface{}) {
 		Code: HttpStatusOk,
 		Data: data,
 	}
-	this.Log.Infof("Response: %+v", h)
-	this.ctx.JSON(http.StatusOK, h)
+	c.Log.Infof("Response: %+v", h)
+	c.ctx.JSON(http.StatusOK, h)
 }
 
 // RenderNotLog 成功返回无日志
-func (this *Context) RenderNotLog(data interface{}) {
+func (c *Context) RenderNotLog(data interface{}) {
 	if data == nil {
 		data = []string{}
 	}
@@ -131,24 +131,24 @@ func (this *Context) RenderNotLog(data interface{}) {
 		Code: HttpStatusOk,
 		Data: data,
 	}
-	this.ctx.JSON(http.StatusOK, h)
+	c.ctx.JSON(http.StatusOK, h)
 }
 
 // RenderError 错误返回
-func (this *Context) RenderError(code HttpStatus, e error) {
+func (c *Context) RenderError(code HttpStatus, e error) {
 	h := RenderStruct{
 		Code: code,
 		Msg:  e.Error(),
 		Data: []string{},
 	}
-	this.Log.Infof("Response: %+v", h)
-	this.ctx.JSON(http.StatusOK, h)
+	c.Log.Infof("Response: %+v", h)
+	c.ctx.JSON(http.StatusOK, h)
 }
 
 // RenderRealError 错误返回并将realE以Error日志打印
-func (this *Context) RenderRealError(code HttpStatus, userE error, realE error) {
+func (c *Context) RenderRealError(code HttpStatus, userE error, realE error) {
 	if realE != nil {
-		this.Log.Warnf(realE.Error())
+		c.Log.Warnf(realE.Error())
 	}
 	if userE == nil {
 		userE = errors.New("Server exception")
@@ -158,11 +158,11 @@ func (this *Context) RenderRealError(code HttpStatus, userE error, realE error) 
 		Msg:  userE.Error(),
 		Data: []string{},
 	}
-	this.Log.Infof("Response: %+v", h)
-	this.ctx.JSON(http.StatusOK, h)
+	c.Log.Infof("Response: %+v", h)
+	c.ctx.JSON(http.StatusOK, h)
 }
 
 // RenderServerError 返回系统错误500并打印e
-func (this *Context) RenderServerError(e error) {
-	this.RenderRealError(HttpStatusServerErr, e, e)
+func (c *Context) RenderServerError(e error) {
+	c.RenderRealError(HttpStatusServerErr, e, e)
 }
