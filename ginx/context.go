@@ -32,7 +32,7 @@ type Context struct {
  *
  * type UserIndexReq struct {
  *	UserId    int      `json:"userId" binding:"required"`
- *	UserName  string   `json:"userName" binding:"trimspace,required"`  // trimspace tag 需要写在最前面,先去两端空格再验证必填
+ *	UserName  string   `json:"userName" binding:"required"`
  * }
  *
  * func (this *UserController) Index(c *gin.Context) {

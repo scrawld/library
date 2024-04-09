@@ -2,10 +2,8 @@ package ginx
 
 import (
 	"reflect"
-	"strings"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/shopspring/decimal"
 )
 
@@ -29,16 +27,4 @@ func ValidateCustomTimeType(field reflect.Value) interface{} {
 		return value
 	}
 	return field.Interface()
-}
-
-// ValidateTrimSpace 去除string两端空格
-func ValidateTrimSpace(fl validator.FieldLevel) bool {
-	field := fl.Field()
-	if field.Kind() == reflect.String {
-		if !field.CanSet() {
-			return false // 需要传递指针
-		}
-		field.SetString(strings.TrimSpace(field.String()))
-	}
-	return true
 }
