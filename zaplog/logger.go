@@ -13,7 +13,7 @@ var (
 )
 
 type Config struct {
-	Level    string `json:"level"`    // 日志等级: debug/info/warn/error/dpanic/panic/fatal
+	Level    string `json:"level"`    // 日志等级: debug/info/warn/error/dpanic/panic/fatal,default:info
 	Encoding string `json:"encoding"` // 日志格式: json/console,default:console
 	Director string `json:"director"` // 日志目录
 	MaxAge   int    `json:"maxAge"`   // 保留日志文件的最大天数
