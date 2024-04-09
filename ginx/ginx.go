@@ -1,6 +1,8 @@
 package ginx
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
@@ -17,4 +19,17 @@ func init() {
 		enTranslations.RegisterDefaultTranslations(validate, trans)             // 修改语言
 		validate.RegisterCustomTypeFunc(ValidateDecimalType, decimal.Decimal{}) // 将Decimal转成float64进行校验
 	}
+}
+
+func translateValidationError(err error) error {
+	if err != nil {
+		errs, ok := err.(validator.ValidationErrors)
+		if !ok {
+			return err
+		}
+		for _, e := range errs {
+			return errors.New(e.Translate(trans))
+		}
+	}
+	return nil
 }

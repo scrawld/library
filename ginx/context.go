@@ -85,7 +85,7 @@ func (c *Context) ShouldBind(obj interface{}) error {
 	if obj == nil {
 		return nil
 	}
-	return c.ctx.ShouldBind(obj)
+	return translateValidationError(c.ctx.ShouldBind(obj))
 }
 
 func (c *Context) ClientIP() string {
