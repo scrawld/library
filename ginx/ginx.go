@@ -22,14 +22,22 @@ func init() {
 }
 
 func translateValidationError(err error) error {
-	if err != nil {
-		errs, ok := err.(validator.ValidationErrors)
-		if !ok {
-			return err
+	if err == nil {
+		return nil
+	}
+	switch errs := err.(type) {
+	case validator.ValidationErrors:
+		for _, v := range errs {
+			return errors.New(v.Translate(trans))
 		}
-		for _, e := range errs {
-			return errors.New(e.Translate(trans))
+	case binding.SliceValidationError:
+		for _, v := range errs {
+			if validationErrors, ok := v.(validator.ValidationErrors); ok {
+				for _, ve := range validationErrors {
+					return errors.New(ve.Translate(trans))
+				}
+			}
 		}
 	}
-	return nil
+	return err
 }
