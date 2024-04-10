@@ -13,10 +13,10 @@ var (
 )
 
 type Config struct {
-	Level    string `json:"level"`    // 日志等级: debug/info/warn/error/dpanic/panic/fatal,default:info
-	Encoding string `json:"encoding"` // 日志格式: json/console,default:console
-	Director string `json:"director"` // 日志目录
-	MaxAge   int    `json:"maxAge"`   // 保留日志文件的最大天数
+	Level     string `json:"level"`     // 日志等级: debug/info/warn/error/dpanic/panic/fatal,default:info
+	Encoding  string `json:"encoding"`  // 日志格式: json/console,default:console
+	Directory string `json:"directory"` // 日志目录
+	MaxAge    int    `json:"maxAge"`    // 保留日志文件的最大天数
 }
 
 // RegisterLogger 初始化日志
@@ -33,7 +33,7 @@ func RegisterLogger(cfg Config, options ...zap.Option) error {
 		encoder = GetEncoder(cfg.Encoding)
 	)
 	addCore := func(filename string, enab zapcore.LevelEnabler, logInConsole bool) error {
-		writer, err := GetWriteSyncer(path.Join(cfg.Director, filename), cfg.MaxAge, logInConsole)
+		writer, err := GetWriteSyncer(path.Join(cfg.Directory, filename), cfg.MaxAge, logInConsole)
 		if err != nil {
 			return fmt.Errorf("get write syncer error: %s", err.Error())
 		}
