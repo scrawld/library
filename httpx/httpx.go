@@ -2,7 +2,6 @@ package httpx
 
 import (
 	"net/http"
-	"net/url"
 )
 
 /**
@@ -53,7 +52,7 @@ func Post(url string, body interface{}, respBody interface{}, options ...ClientO
 }
 
 // PostForm
-func PostForm(url string, body url.Values, respBody interface{}, options ...ClientOptionFunc) (r *http.Response, err error) {
+func PostForm(url string, body interface{}, respBody interface{}, options ...ClientOptionFunc) (r *http.Response, err error) {
 	options = append(options, SetMethod("POST"), SetHeader(map[string]string{"Content-Type": "application/x-www-form-urlencoded"}))
 	if body != nil {
 		options = append(options, SetBody(body))
