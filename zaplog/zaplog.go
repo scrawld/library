@@ -6,7 +6,7 @@ import (
 )
 
 type TracingLogger struct {
-	traceId string
+	TraceId string
 	prefix  string
 	logger  *zap.SugaredLogger
 }
@@ -20,7 +20,7 @@ func New(traceId ...string) (r *TracingLogger) {
 		tid = uid.String()
 	}
 	o := &TracingLogger{
-		traceId: tid, prefix: "[tid:" + tid + "]",
+		TraceId: tid, prefix: "[tid:" + tid + "]",
 		logger: Logger.Sugar().WithOptions(zap.AddCallerSkip(1)),
 	}
 	return o
