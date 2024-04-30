@@ -1,67 +1,64 @@
 package zaplog
 
 import (
-	"github.com/google/uuid"
+	"fmt"
+	"path"
+
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-type TracingLogger struct {
-	TraceId string
-	prefix  string
-	logger  *zap.SugaredLogger
+var (
+	Logger *zap.Logger
+)
+
+type Config struct {
+	Level     string `json:"level"`     // 日志等级: debug/info/warn/error/dpanic/panic/fatal,default:info
+	Encoding  string `json:"encoding"`  // 日志格式: json/console,default:console
+	Directory string `json:"directory"` // 日志目录
+	MaxAge    int    `json:"maxAge"`    // 保留日志文件的最大天数
 }
 
-func New(traceId ...string) (r *TracingLogger) {
-	var tid string
-	if len(traceId) != 0 && len(traceId[0]) != 0 {
-		tid = traceId[0]
-	} else {
-		uid, _ := uuid.NewRandom()
-		tid = uid.String()
+// RegisterLogger 初始化日志
+func RegisterLogger(cfg Config, options ...zap.Option) error {
+	level, err := zapcore.ParseLevel(cfg.Level)
+	if err != nil {
+		return fmt.Errorf("parse level error: %s", err)
 	}
-	o := &TracingLogger{
-		TraceId: tid, prefix: "[tid:" + tid + "]",
-		logger: Logger.Sugar().WithOptions(zap.AddCallerSkip(1)),
+	if cfg.Encoding == "" {
+		cfg.Encoding = "console"
 	}
-	return o
+	var (
+		cores   = []zapcore.Core{}
+		encoder = GetEncoder(cfg.Encoding)
+	)
+	addCore := func(filename string, enab zapcore.LevelEnabler, logInConsole bool) error {
+		writer, err := GetWriteSyncer(path.Join(cfg.Directory, filename), cfg.MaxAge, logInConsole)
+		if err != nil {
+			return fmt.Errorf("get write syncer error: %s", err.Error())
+		}
+		cores = append(cores, zapcore.NewCore(encoder, writer, enab))
+		return nil
+	}
+	// add main core
+	err = addCore("app.log", level, true)
+	if err != nil {
+		return fmt.Errorf("add main core error: %s", err)
+	}
+	// add core
+	for _, v := range []zapcore.Level{zapcore.WarnLevel, zapcore.ErrorLevel} {
+		if level.Enabled(v) {
+			err = addCore("app."+v.String()+".log", GetLevelEnabler(v), false)
+			if err != nil {
+				return fmt.Errorf("get %s core error: %s", v.String(), err)
+			}
+		}
+	}
+	Logger = zap.New(zapcore.NewTee(cores...), options...)
+	return nil
 }
 
-func (l *TracingLogger) clone() *TracingLogger {
-	copy := *l
-	return &copy
-}
-
-func (l *TracingLogger) WithOptions(opts ...zap.Option) *TracingLogger {
-	l.logger = l.clone().logger.WithOptions(opts...)
-	return l
-}
-
-func (l *TracingLogger) AddCallerSkip(skip int) *TracingLogger {
-	return l.clone().WithOptions(zap.AddCallerSkip(skip))
-}
-
-// 关闭行号
-func (l *TracingLogger) CloseCaller() *TracingLogger {
-	return l.clone().WithOptions(zap.WithCaller(false))
-}
-
-func (l *TracingLogger) Named(name string) *TracingLogger {
-	l.logger = l.logger.Named(name)
-	return l
-}
-
-func (l *TracingLogger) Debugf(f string, v ...interface{}) {
-	l.logger.Debugf(l.prefix+" "+f, v...)
-}
-
-func (l *TracingLogger) Infof(f string, v ...interface{}) {
-	l.logger.Infof(l.prefix+" "+f, v...)
-}
-
-func (l *TracingLogger) Warnf(f string, v ...interface{}) {
-	l.logger.Warnf(l.prefix+" "+f, v...)
-}
-
-func (l *TracingLogger) Errorf(f string, v ...interface{}) {
-	l.logger.Errorf(l.prefix+" "+f, v...)
+// Sync calls the underlying Core's Sync method, flushing any buffered log
+func Sync() error {
+	return Logger.Sync()
 }
