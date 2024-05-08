@@ -94,9 +94,9 @@ func (c *Context) ClientIP() string {
 
 /************ Render **************/
 type RenderStruct struct {
-	Code HttpStatus  `json:"code"`
-	Msg  string      `json:"msg"`
-	Data interface{} `json:"data"`
+	Code    HttpStatus  `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
 // WriteExcel 将excel文件返回
@@ -137,9 +137,9 @@ func (c *Context) RenderNotLog(data interface{}) {
 // RenderError 错误返回
 func (c *Context) RenderError(code HttpStatus, e error) {
 	h := RenderStruct{
-		Code: code,
-		Msg:  e.Error(),
-		Data: []string{},
+		Code:    code,
+		Message: e.Error(),
+		Data:    []string{},
 	}
 	c.Log.Infof("Response: %+v", h)
 	c.ctx.JSON(http.StatusOK, h)
@@ -154,9 +154,9 @@ func (c *Context) RenderRealError(code HttpStatus, userE error, realE error) {
 		userE = errors.New("Server exception")
 	}
 	h := RenderStruct{
-		Code: code,
-		Msg:  userE.Error(),
-		Data: []string{},
+		Code:    code,
+		Message: userE.Error(),
+		Data:    []string{},
 	}
 	c.Log.Infof("Response: %+v", h)
 	c.ctx.JSON(http.StatusOK, h)
