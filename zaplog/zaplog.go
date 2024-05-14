@@ -8,9 +8,25 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var (
-	Logger *zap.Logger
-)
+var Logger *zap.Logger
+
+// RegisterGlobalLogger initializes the global logger
+func RegisterGlobalLogger(cfg Config, options ...zap.Option) error {
+	logger, err := RegisterLogger(cfg, options...)
+	if err != nil {
+		return err
+	}
+	Logger = logger
+	return nil
+}
+
+// Sync calls the underlying Core's Sync method, flushing any buffered log
+func Sync() error {
+	if Logger == nil {
+		return nil // Logger has not been initialized yet
+	}
+	return Logger.Sync()
+}
 
 type Config struct {
 	Level     string `json:"level"`     // 日志等级: debug/info/warn/error/dpanic/panic/fatal,default:info
@@ -19,11 +35,11 @@ type Config struct {
 	MaxAge    int    `json:"maxAge"`    // 保留日志文件的最大天数
 }
 
-// RegisterLogger 初始化日志
-func RegisterLogger(cfg Config, options ...zap.Option) error {
+// RegisterLogger initializes the logger
+func RegisterLogger(cfg Config, options ...zap.Option) (*zap.Logger, error) {
 	level, err := zapcore.ParseLevel(cfg.Level)
 	if err != nil {
-		return fmt.Errorf("parse level error: %s", err)
+		return nil, fmt.Errorf("parse level error: %s", err)
 	}
 	if cfg.Encoding == "" {
 		cfg.Encoding = "console"
@@ -43,22 +59,16 @@ func RegisterLogger(cfg Config, options ...zap.Option) error {
 	// add main core
 	err = addCore("app.log", level, true)
 	if err != nil {
-		return fmt.Errorf("add main core error: %s", err)
+		return nil, fmt.Errorf("add main core error: %s", err)
 	}
 	// add core
 	for _, v := range []zapcore.Level{zapcore.WarnLevel, zapcore.ErrorLevel} {
 		if level.Enabled(v) {
 			err = addCore("app."+v.String()+".log", GetLevelEnabler(v), false)
 			if err != nil {
-				return fmt.Errorf("get %s core error: %s", v.String(), err)
+				return nil, fmt.Errorf("get %s core error: %s", v.String(), err)
 			}
 		}
 	}
-	Logger = zap.New(zapcore.NewTee(cores...), options...)
-	return nil
-}
-
-// Sync calls the underlying Core's Sync method, flushing any buffered log
-func Sync() error {
-	return Logger.Sync()
+	return zap.New(zapcore.NewTee(cores...), options...), nil
 }
