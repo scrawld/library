@@ -1,6 +1,8 @@
 package zaplog
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -22,8 +24,9 @@ func New(traceId ...string) (r *TracingLogger) {
 		tid = uid.String()
 	}
 	o := &TracingLogger{
-		TraceId: tid, prefix: "[tid:" + tid + "]",
-		logger: Logger.Sugar().WithOptions(zap.AddCallerSkip(1)),
+		TraceId: tid,
+		prefix:  "[tid:" + tid + "] ",
+		logger:  Logger.Sugar().WithOptions(zap.AddCallerSkip(1)),
 	}
 	return o
 }
@@ -56,22 +59,42 @@ func (l *TracingLogger) Named(name string) *TracingLogger {
 	return l
 }
 
+// Debug logs a debug message with the given arguments.
+func (l *TracingLogger) Debug(args ...interface{}) {
+	l.logger.Debug(l.prefix, fmt.Sprint(args...))
+}
+
+// Info logs an info message with the given arguments.
+func (l *TracingLogger) Info(args ...interface{}) {
+	l.logger.Info(l.prefix, fmt.Sprint(args...))
+}
+
+// Warn logs a warning message with the given arguments.
+func (l *TracingLogger) Warn(args ...interface{}) {
+	l.logger.Warn(l.prefix, fmt.Sprint(args...))
+}
+
+// Error logs an error message with the given arguments.
+func (l *TracingLogger) Error(args ...interface{}) {
+	l.logger.Error(l.prefix, fmt.Sprint(args...))
+}
+
 // Debugf logs a debug message with the formatted string and arguments.
-func (l *TracingLogger) Debugf(f string, v ...interface{}) {
-	l.logger.Debugf(l.prefix+" "+f, v...)
+func (l *TracingLogger) Debugf(template string, args ...interface{}) {
+	l.logger.Debugf(l.prefix+template, args...)
 }
 
 // Infof logs an info message with the formatted string and arguments.
-func (l *TracingLogger) Infof(f string, v ...interface{}) {
-	l.logger.Infof(l.prefix+" "+f, v...)
+func (l *TracingLogger) Infof(template string, args ...interface{}) {
+	l.logger.Infof(l.prefix+template, args...)
 }
 
 // Warnf logs a warning message with the formatted string and arguments.
-func (l *TracingLogger) Warnf(f string, v ...interface{}) {
-	l.logger.Warnf(l.prefix+" "+f, v...)
+func (l *TracingLogger) Warnf(template string, args ...interface{}) {
+	l.logger.Warnf(l.prefix+template, args...)
 }
 
 // Errorf logs an error message with the formatted string and arguments.
-func (l *TracingLogger) Errorf(f string, v ...interface{}) {
-	l.logger.Errorf(l.prefix+" "+f, v...)
+func (l *TracingLogger) Errorf(template string, args ...interface{}) {
+	l.logger.Errorf(l.prefix+template, args...)
 }
