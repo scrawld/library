@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/hex"
+	"errors"
 )
 
 // AesEncrypt aes encrypt
@@ -35,7 +36,10 @@ func AesDecrypt(key []byte, ciphertext string) ([]byte, error) {
 	blockMode := cipher.NewCBCDecrypter(block, key[:blockSize])
 	plaintext := make([]byte, len(cipherBytes))
 	blockMode.CryptBlocks(plaintext, cipherBytes)
-	plaintext = PKCS5UnPadding(plaintext)
+	plaintext, err = PKCS5UnPadding(plaintext)
+	if err != nil {
+		return nil, err
+	}
 	return plaintext, nil
 }
 
@@ -47,8 +51,14 @@ func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
 }
 
 // PKCS5UnPadding unpadding
-func PKCS5UnPadding(plaintext []byte) []byte {
+func PKCS5UnPadding(plaintext []byte) ([]byte, error) {
 	length := len(plaintext)
+	if length == 0 {
+		return nil, errors.New("plaintext is empty")
+	}
 	unpadding := int(plaintext[length-1])
-	return plaintext[:(length - unpadding)]
+	if unpadding > length || unpadding == 0 {
+		return nil, errors.New("invalid padding size")
+	}
+	return plaintext[:(length - unpadding)], nil
 }

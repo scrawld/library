@@ -14,11 +14,15 @@ func TestAesEncryptDecrypt(t *testing.T) {
 
 	// Encrypt
 	ciphertext, err := AesEncrypt(key, plaintext)
-	assert.NoError(err, "Encryption should not return an error")
+	if !assert.NoError(err, "Encryption should not return an error") {
+		return
+	}
 
 	// Decrypt
 	decryptedPlaintext, err := AesDecrypt(key, ciphertext)
-	assert.NoError(err, "Decryption should not return an error")
+	if !assert.NoError(err, "Decryption should not return an error") {
+		return
+	}
 
 	// Verify
 	assert.Equal(plaintext, decryptedPlaintext, "Decrypted plaintext should match original plaintext")
