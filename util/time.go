@@ -236,3 +236,55 @@ func GetDataHourRange(st, et time.Time) (r []int) {
 	}
 	return
 }
+
+// GetYearWeekByStartOfWeek 根据指定日期和自定义一周的第一天，计算该日期所在周的年份和周次
+func GetYearWeekByStartOfWeek(date time.Time, startOfWeek time.Weekday) (year, week int) {
+	// 获取指定日期的星期几
+	weekday := date.Weekday()
+
+	// 计算距离自定义一周第一天的偏移量
+	offset := (int(weekday-startOfWeek) + 7) % 7
+
+	// 计算本周的开始时间
+	monday := date.AddDate(0, 0, -offset)
+
+	// 获取目标周的年份和周次
+	year, week = monday.ISOWeek()
+	return
+}
+
+// GetWeekStartEndByStartOfWeek 根据指定日期和自定义一周的第一天，计算该日期所在周的开始和结束日期
+func GetWeekStartEndByStartOfWeek(date time.Time, startOfWeek time.Weekday) (time.Time, time.Time) {
+	// 获取指定日期的星期几
+	weekday := date.Weekday()
+
+	// 计算距离自定义一周第一天的偏移量
+	offset := (int(weekday-startOfWeek) + 7) % 7
+
+	// 计算本周的开始时间
+	weekStart := date.AddDate(0, 0, -offset)
+
+	// 确保时间部分为零
+	weekStart = time.Date(weekStart.Year(), weekStart.Month(), weekStart.Day(), 0, 0, 0, 0, weekStart.Location())
+
+	// 计算本周的结束时间
+	weekEnd := weekStart.AddDate(0, 0, 7).Add(-time.Nanosecond)
+
+	return weekStart, weekEnd
+}
+
+// GetDateOfWeekdayByStartOfWeek 根据指定日期、目标周几和自定义一周的第一天，计算目标周几的日期
+func GetDateOfWeekdayByStartOfWeek(date time.Time, targetWeekday, startOfWeek time.Weekday) time.Time {
+	currentWeekday := date.Weekday()
+
+	// 调整当前周几和目标周几相对于一周的第一天
+	adjustedCurrentWeekday := (currentWeekday - startOfWeek + 7) % 7
+	adjustedTargetWeekday := (targetWeekday - startOfWeek + 7) % 7
+
+	// 计算调整后目标周几与当前周几的天数差
+	daysDifference := int(adjustedTargetWeekday - adjustedCurrentWeekday)
+
+	// 获取目标日期
+	targetDate := date.AddDate(0, 0, daysDifference)
+	return targetDate
+}
