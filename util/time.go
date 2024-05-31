@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"time"
@@ -287,4 +288,15 @@ func GetDateOfWeekdayByStartOfWeek(date time.Time, targetWeekday, startOfWeek ti
 	// 获取目标日期
 	targetDate := date.AddDate(0, 0, daysDifference)
 	return targetDate
+}
+
+// CombineDateAndTime 将给定的日期与时间字符串结合起来以产生新的时间值
+func CombineDateAndTime(date time.Time, timeOnlyStr string) (time.Time, error) {
+	timeOnly, err := time.Parse(time.TimeOnly, timeOnlyStr)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("parse time only error: %s", err)
+	}
+	targetTime := time.Date(date.Year(), date.Month(), date.Day(), timeOnly.Hour(), timeOnly.Minute(), timeOnly.Second(), 0, time.Local)
+
+	return targetTime, nil
 }

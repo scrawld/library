@@ -64,3 +64,47 @@ func TestGetDateOfWeekdayByStartOfWeek(t *testing.T) {
 		assert.True(t, targetDate.Equal(test.expectedTarget), "Target date should be equal")
 	}
 }
+
+func TestCombineDateAndTime(t *testing.T) {
+	tests := []struct {
+		date        time.Time
+		timeOnlyStr string
+		expected    time.Time
+		shouldError bool
+	}{
+		{
+			date:        time.Date(2023, 5, 31, 0, 0, 0, 0, time.Local),
+			timeOnlyStr: "14:30:00",
+			expected:    time.Date(2023, 5, 31, 14, 30, 0, 0, time.Local),
+			shouldError: false,
+		},
+		{
+			date:        time.Date(2023, 12, 31, 0, 0, 0, 0, time.Local),
+			timeOnlyStr: "23:59:59",
+			expected:    time.Date(2023, 12, 31, 23, 59, 59, 0, time.Local),
+			shouldError: false,
+		},
+		{
+			date:        time.Date(2024, 2, 29, 0, 0, 0, 0, time.Local), // Leap year case
+			timeOnlyStr: "12:00:00",
+			expected:    time.Date(2024, 2, 29, 12, 0, 0, 0, time.Local),
+			shouldError: false,
+		},
+		{
+			date:        time.Date(2023, 5, 31, 0, 0, 0, 0, time.Local),
+			timeOnlyStr: "invalid-time",
+			expected:    time.Time{},
+			shouldError: true,
+		},
+	}
+
+	for _, test := range tests {
+		result, err := CombineDateAndTime(test.date, test.timeOnlyStr)
+		if test.shouldError {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+			assert.Equal(t, test.expected, result)
+		}
+	}
+}
