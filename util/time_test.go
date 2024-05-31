@@ -35,8 +35,8 @@ func TestGetWeekStartEndByStartOfWeek(t *testing.T) {
 		expectedStart time.Time
 		expectedEnd   time.Time
 	}{
-		{time.Date(2024, 5, 31, 0, 0, 0, 0, time.UTC), time.Monday, time.Date(2024, 5, 27, 0, 0, 0, 0, time.UTC), time.Date(2024, 6, 2, 23, 59, 59, 999999999, time.UTC)},
-		{time.Date(2024, 5, 31, 0, 0, 0, 0, time.UTC), time.Sunday, time.Date(2024, 5, 26, 0, 0, 0, 0, time.UTC), time.Date(2024, 6, 1, 23, 59, 59, 999999999, time.UTC)},
+		{time.Date(2024, 5, 31, 0, 0, 0, 0, time.UTC), time.Monday, time.Date(2024, 5, 27, 0, 0, 0, 0, time.UTC), time.Date(2024, 6, 2, 23, 59, 59, 0, time.UTC)},
+		{time.Date(2024, 5, 31, 0, 0, 0, 0, time.UTC), time.Sunday, time.Date(2024, 5, 26, 0, 0, 0, 0, time.UTC), time.Date(2024, 6, 1, 23, 59, 59, 0, time.UTC)},
 	}
 
 	for _, test := range tests {

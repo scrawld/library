@@ -268,7 +268,7 @@ func GetWeekStartEndByStartOfWeek(date time.Time, startOfWeek time.Weekday) (tim
 	weekStart = time.Date(weekStart.Year(), weekStart.Month(), weekStart.Day(), 0, 0, 0, 0, weekStart.Location())
 
 	// 计算本周的结束时间
-	weekEnd := weekStart.AddDate(0, 0, 7).Add(-time.Nanosecond)
+	weekEnd := weekStart.AddDate(0, 0, 7).Add(-time.Second)
 
 	return weekStart, weekEnd
 }
