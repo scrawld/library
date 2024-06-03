@@ -108,3 +108,33 @@ func TestCombineDateAndTime(t *testing.T) {
 		}
 	}
 }
+
+func TestGetMonthStartEnd(t *testing.T) {
+	tests := []struct {
+		date          time.Time
+		expectedStart time.Time
+		expectedEnd   time.Time
+	}{
+		{
+			date:          time.Date(2023, 5, 15, 0, 0, 0, 0, time.Local),
+			expectedStart: time.Date(2023, 5, 1, 0, 0, 0, 0, time.Local),
+			expectedEnd:   time.Date(2023, 5, 31, 23, 59, 59, 0, time.Local),
+		},
+		{
+			date:          time.Date(2024, 2, 15, 0, 0, 0, 0, time.Local), // Leap year case
+			expectedStart: time.Date(2024, 2, 1, 0, 0, 0, 0, time.Local),
+			expectedEnd:   time.Date(2024, 2, 29, 23, 59, 59, 0, time.Local),
+		},
+		{
+			date:          time.Date(2023, 12, 15, 0, 0, 0, 0, time.Local),
+			expectedStart: time.Date(2023, 12, 1, 0, 0, 0, 0, time.Local),
+			expectedEnd:   time.Date(2023, 12, 31, 23, 59, 59, 0, time.Local),
+		},
+	}
+
+	for _, test := range tests {
+		expectedStart, expectedEnd := GetMonthStartEnd(test.date)
+		assert.Equal(t, test.expectedStart, expectedStart)
+		assert.Equal(t, test.expectedEnd, expectedEnd)
+	}
+}

@@ -300,3 +300,15 @@ func CombineDateAndTime(date time.Time, timeOnlyStr string) (time.Time, error) {
 
 	return targetTime, nil
 }
+
+// GetMonthStartEnd 返回给定日期的月份第一天和最后一天。
+func GetMonthStartEnd(date time.Time) (time.Time, time.Time) {
+	// 获取月份第一天
+	monthStart := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location())
+
+	// 获取当月最后一天
+	// 在第一天加上一个月并减去一秒
+	monthEnd := monthStart.AddDate(0, 1, 0).Add(-time.Second)
+
+	return monthStart, monthEnd
+}
