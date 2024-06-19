@@ -8,10 +8,11 @@ import (
 
 func TestMain(m *testing.M) {
 	err := RegisterGlobalLogger(Config{
-		Level:     "debug",
-		Encoding:  "console",
-		Directory: "/tmp/zaplog",
-		MaxAge:    7,
+		Level:        "debug",
+		Encoding:     "console",
+		Directory:    "/tmp/zaplog",
+		MaxAge:       7,
+		LogInConsole: true,
 	})
 	if err != nil {
 		fmt.Printf("register global logger error: %s\n", err)
