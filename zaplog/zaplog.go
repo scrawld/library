@@ -29,10 +29,11 @@ func Sync() error {
 }
 
 type Config struct {
-	Level     string `json:"level"`     // 日志等级: debug/info/warn/error/dpanic/panic/fatal,default:info
-	Encoding  string `json:"encoding"`  // 日志格式: json/console,default:console
-	Directory string `json:"directory"` // 日志目录
-	MaxAge    int    `json:"maxAge"`    // 保留日志文件的最大天数
+	Level        string `json:"level"`        // 日志等级: debug/info/warn/error/dpanic/panic/fatal,default:info
+	Encoding     string `json:"encoding"`     // 日志格式: json/console,default:console
+	Directory    string `json:"directory"`    // 日志目录
+	MaxAge       int    `json:"maxAge"`       // 保留日志文件的最大天数
+	LogInConsole bool   `json:"logInConsole"` // 是否在终端输出
 }
 
 // RegisterLogger initializes the logger
@@ -57,7 +58,7 @@ func RegisterLogger(cfg Config, options ...zap.Option) (*zap.Logger, error) {
 		return nil
 	}
 	// add main core
-	err = addCore("app.log", level, true)
+	err = addCore("app.log", level, cfg.LogInConsole)
 	if err != nil {
 		return nil, fmt.Errorf("add main core error: %s", err)
 	}
