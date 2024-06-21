@@ -13,6 +13,11 @@ func TestMain(m *testing.M) {
 		Directory:    "/tmp/zaplog",
 		MaxAge:       7,
 		LogInConsole: true,
+		//FileNames: map[string]string{
+		//	"main":  "myname.log",
+		//	"warn":  "myname.warn.log",
+		//	"error": "myname.err.log",
+		//},
 	})
 	if err != nil {
 		fmt.Printf("register global logger error: %s\n", err)
