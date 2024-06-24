@@ -15,20 +15,34 @@ type TracingLogger struct {
 }
 
 // New creates a new TracingLogger instance with an optional trace ID.
-func New(traceId ...string) (r *TracingLogger) {
-	var tid string
-	if len(traceId) != 0 && len(traceId[0]) != 0 {
-		tid = traceId[0]
-	} else {
-		uid, _ := uuid.NewRandom()
-		tid = uid.String()
-	}
+func New(traceId ...string) *TracingLogger {
+	tid := generateTraceID(traceId...)
 	o := &TracingLogger{
 		TraceId: tid,
 		prefix:  "[tid:" + tid + "] ",
 		logger:  Logger.Sugar().WithOptions(zap.AddCallerSkip(1)),
 	}
 	return o
+}
+
+// NewWithLogger creates a new TracingLogger instance with an existing zap.Logger and an optional trace ID.
+func NewWithLogger(logger *zap.Logger, traceId ...string) *TracingLogger {
+	tid := generateTraceID(traceId...)
+	o := &TracingLogger{
+		TraceId: tid,
+		prefix:  "[tid:" + tid + "] ",
+		logger:  logger.Sugar().WithOptions(zap.AddCallerSkip(1)),
+	}
+	return o
+}
+
+// generateTraceID generates a new trace ID if one is not provided.
+func generateTraceID(traceId ...string) string {
+	if len(traceId) != 0 && len(traceId[0]) != 0 {
+		return traceId[0]
+	}
+	uid, _ := uuid.NewRandom()
+	return uid.String()
 }
 
 // clone creates a copy of the TracingLogger instance.
