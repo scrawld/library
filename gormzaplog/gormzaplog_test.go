@@ -97,3 +97,28 @@ func TestFailedUpsert(t *testing.T) {
 	}).Create(u)
 	assert.Nil(t, result.Error)
 }
+
+func TestParseLevel(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected logger.LogLevel
+	}{
+		{"silent", logger.Silent},
+		{"error", logger.Error},
+		{"warn", logger.Warn},
+		{"info", logger.Info},
+		{"", logger.Warn},         // 空字符串应该返回 Warn
+		{"WARN", logger.Warn},     // 测试大小写不敏感
+		{"  info  ", logger.Info}, // 测试带空格输入
+	}
+
+	for _, test := range tests {
+		result, err := ParseLevel(test.input)
+		if err != nil {
+			t.Errorf("ParseLevel(%q) returned error: %v", test.input, err)
+		}
+		if result != test.expected {
+			t.Errorf("ParseLevel(%q) = %v; want %v", test.input, result, test.expected)
+		}
+	}
+}

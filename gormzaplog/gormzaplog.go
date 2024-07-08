@@ -1,7 +1,10 @@
 package gormzaplog
 
 import (
-	"test_gorm/library/zaplog"
+	"fmt"
+	"strings"
+
+	"github.com/scrawld/library/zaplog"
 
 	"gorm.io/gorm/logger"
 )
@@ -28,4 +31,21 @@ func Sync() error {
 		return nil // Logger has not been initialized yet
 	}
 	return Logger.logger.Sync()
+}
+
+// ParseLevel parses a string into a LogLevel. It returns an error if the input does not match any known log level.
+func ParseLevel(text string) (logger.LogLevel, error) {
+	lower := strings.ToLower(strings.TrimSpace(text))
+
+	switch lower {
+	case "silent":
+		return logger.Silent, nil
+	case "error":
+		return logger.Error, nil
+	case "warn", "": // make the zero value useful
+		return logger.Warn, nil
+	case "info":
+		return logger.Info, nil
+	}
+	return 0, fmt.Errorf("unrecognized level: %s", text)
 }
