@@ -22,10 +22,9 @@ func TestLoops_AddFuncAndStart(t *testing.T) {
 
 	// 运行一段时间后停止
 	time.Sleep(500 * time.Millisecond)
-	loop.Stop()
 
 	// 等待任务完全停止
-	ctx := loop.Stop() // 再次调用 Stop，应返回立即完成的 context
+	ctx := loop.Stop()
 	select {
 	case <-ctx.Done():
 		// 任务应已停止
@@ -56,10 +55,9 @@ func TestLoops_MultipleStart(t *testing.T) {
 
 	// 运行一段时间后停止
 	time.Sleep(500 * time.Millisecond)
-	loop.Stop()
 
 	// 等待任务完全停止
-	ctx := loop.Stop() // 再次调用 Stop，应返回立即完成的 context
+	ctx := loop.Stop()
 	select {
 	case <-ctx.Done():
 		// 任务应已停止
