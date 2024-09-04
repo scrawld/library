@@ -1,9 +1,10 @@
 package loops
 
 import (
+	"context"
 	"log"
-	"os"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -13,39 +14,52 @@ type Entry struct {
 }
 
 type Loops struct {
-	ExeDir  string
-	entries []*Entry
-	running bool
+	entries   []*Entry
+	running   bool
+	runningMu sync.Mutex
+	jobWaiter sync.WaitGroup
 }
 
 func New() *Loops {
-	o := &Loops{
-		ExeDir:  os.Getenv("EXECDIR"),
-		running: true,
-	}
+	o := &Loops{}
 	return o
 }
 
-func (this *Loops) AddFunc(spec time.Duration, cmd func()) {
+func (l *Loops) AddFunc(spec time.Duration, cmd func()) {
+	l.runningMu.Lock()
+	defer l.runningMu.Unlock()
+
 	entry := &Entry{
 		Spec: spec,
 		Job:  cmd,
 	}
-	this.entries = append(this.entries, entry)
+	l.entries = append(l.entries, entry)
 }
 
-func (this *Loops) Start() {
-	for _, entry := range this.entries {
+func (l *Loops) Start() {
+	l.runningMu.Lock()
+	defer l.runningMu.Unlock()
+
+	if l.running {
+		return
+	}
+	l.running = true
+
+	for _, entry := range l.entries {
+		l.jobWaiter.Add(1)
+
 		go func(entry *Entry) {
-			for this.running {
-				this.runWithRecovery(entry.Job)
+			defer l.jobWaiter.Done()
+
+			for l.running {
+				l.runWithRecovery(entry.Job)
 				time.Sleep(entry.Spec)
 			}
 		}(entry)
 	}
 }
 
-func (this *Loops) runWithRecovery(f func()) {
+func (l *Loops) runWithRecovery(f func()) {
 	defer func() {
 		if r := recover(); r != nil {
 			const size = 64 << 10
@@ -57,6 +71,21 @@ func (this *Loops) runWithRecovery(f func()) {
 	f()
 }
 
-func (this *Loops) Stop() {
-	this.running = false
+func (l *Loops) Stop() context.Context {
+	l.runningMu.Lock()
+	defer l.runningMu.Unlock()
+
+	if l.running {
+		l.running = false
+	}
+
+	// Create a new context and cancel function
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Start a goroutine to cancel all active consumers
+	go func() {
+		l.jobWaiter.Wait() // Wait for consumer jobs to complete
+		cancel()           // Cancel the context once shutdown is complete
+	}()
+	return ctx
 }
