@@ -8,23 +8,28 @@ import (
 	"time"
 )
 
+// Entry represents a job that will be executed periodically.
+// Spec specifies the time interval between job executions.
 type Entry struct {
 	Spec time.Duration
 	Job  func()
 }
 
+// Loops is a struct that manages multiple periodic jobs.
 type Loops struct {
-	entries   []*Entry
-	running   bool
-	runningMu sync.Mutex
-	jobWaiter sync.WaitGroup
+	entries   []*Entry       // List of jobs to be executed
+	running   bool           // Flag indicating whether the Loops is running
+	runningMu sync.Mutex     // Mutex to protect access to the running flag and entries
+	jobWaiter sync.WaitGroup // WaitGroup to wait for all jobs to complete when stopping
 }
 
+// New creates and returns a new Loops instance.
 func New() *Loops {
 	o := &Loops{}
 	return o
 }
 
+// AddFunc adds a new job to the Loops with the specified interval (Spec) and job function (cmd).
 func (l *Loops) AddFunc(spec time.Duration, cmd func()) {
 	l.runningMu.Lock()
 	defer l.runningMu.Unlock()
@@ -36,6 +41,8 @@ func (l *Loops) AddFunc(spec time.Duration, cmd func()) {
 	l.entries = append(l.entries, entry)
 }
 
+// Start begins executing all added jobs periodically.
+// Each job will run in its own goroutine and will continue to run until Stop is called.
 func (l *Loops) Start() {
 	l.runningMu.Lock()
 	defer l.runningMu.Unlock()
@@ -59,6 +66,8 @@ func (l *Loops) Start() {
 	}
 }
 
+// runWithRecovery runs the provided job function (f) and recovers from any panic that occurs,
+// logging the panic information for debugging purposes.
 func (l *Loops) runWithRecovery(f func()) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -71,6 +80,8 @@ func (l *Loops) runWithRecovery(f func()) {
 	f()
 }
 
+// Stop signals all running jobs to stop and waits for them to complete.
+// It returns a context that will be canceled once all jobs have finished.
 func (l *Loops) Stop() context.Context {
 	l.runningMu.Lock()
 	defer l.runningMu.Unlock()
