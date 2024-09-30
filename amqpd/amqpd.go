@@ -86,7 +86,7 @@ func (ad *Amqpd) Close() error {
 
 // DeclareExchange declares an exchange on the AMQP server with the given name and type.
 func (ad *Amqpd) ExchangeDeclare(name string, kind string) error {
-	return ad.channel.ExchangeDeclare(name, string(kind), true, false, false, false, nil)
+	return ad.channel.ExchangeDeclare(name, kind, true, false, false, false, nil)
 }
 
 // Publish publishes a message to the specified exchange with the given routing key.
