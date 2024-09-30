@@ -85,7 +85,7 @@ func (ad *Amqpd) Close() error {
 }
 
 // DeclareExchange declares an exchange on the AMQP server with the given name and type.
-func (ad *Amqpd) ExchangeDeclare(name string, kind ExchangeType) error {
+func (ad *Amqpd) ExchangeDeclare(name string, kind string) error {
 	return ad.channel.ExchangeDeclare(name, string(kind), true, false, false, false, nil)
 }
 
