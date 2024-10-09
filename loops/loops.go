@@ -17,23 +17,24 @@ type Entry struct {
 
 // Loops is a struct that manages multiple periodic jobs.
 type Loops struct {
+	ctx    context.Context
+	cancel context.CancelFunc
+
 	entries   []*Entry       // List of jobs to be executed
-	running   bool           // Flag indicating whether the Loops is running
-	runningMu sync.Mutex     // Mutex to protect access to the running flag and entries
 	jobWaiter sync.WaitGroup // WaitGroup to wait for all jobs to complete when stopping
 }
 
 // New creates and returns a new Loops instance.
 func New() *Loops {
-	o := &Loops{}
-	return o
+	ctx, cancel := context.WithCancel(context.Background())
+	return &Loops{
+		ctx:    ctx,
+		cancel: cancel,
+	}
 }
 
 // AddFunc adds a new job to the Loops with the specified interval (Spec) and job function (cmd).
 func (l *Loops) AddFunc(spec time.Duration, cmd func()) {
-	l.runningMu.Lock()
-	defer l.runningMu.Unlock()
-
 	entry := &Entry{
 		Spec: spec,
 		Job:  cmd,
@@ -44,25 +45,24 @@ func (l *Loops) AddFunc(spec time.Duration, cmd func()) {
 // Start begins executing all added jobs periodically.
 // Each job will run in its own goroutine and will continue to run until Stop is called.
 func (l *Loops) Start() {
-	l.runningMu.Lock()
-	defer l.runningMu.Unlock()
-
-	if l.running {
-		return
-	}
-	l.running = true
-
 	for _, entry := range l.entries {
 		l.jobWaiter.Add(1)
 
-		go func(entry *Entry) {
-			defer l.jobWaiter.Done()
+		go l.startJob(entry)
+	}
+}
 
-			for l.running {
-				l.runWithRecovery(entry.Job)
-				time.Sleep(entry.Spec)
-			}
-		}(entry)
+// startJob executes a job and handles recovery from panics.
+func (l *Loops) startJob(entry *Entry) {
+	defer l.jobWaiter.Done()
+
+	for {
+		select {
+		case <-l.ctx.Done():
+			return
+		case <-time.After(entry.Spec):
+			l.runWithRecovery(entry.Job)
+		}
 	}
 }
 
@@ -83,13 +83,6 @@ func (l *Loops) runWithRecovery(f func()) {
 // Stop signals all running jobs to stop and waits for them to complete.
 // It returns a context that will be canceled once all jobs have finished.
 func (l *Loops) Stop() context.Context {
-	l.runningMu.Lock()
-	defer l.runningMu.Unlock()
-
-	if l.running {
-		l.running = false
-	}
-
 	// Create a new context and cancel function
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -98,5 +91,7 @@ func (l *Loops) Stop() context.Context {
 		l.jobWaiter.Wait() // Wait for consumer jobs to complete
 		cancel()           // Cancel the context once shutdown is complete
 	}()
+
+	l.cancel() // Signal all jobs to stop
 	return ctx
 }

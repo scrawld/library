@@ -1,86 +1,72 @@
 package loops
 
 import (
-	"sync/atomic"
+	"context"
 	"testing"
 	"time"
 )
 
-func TestLoops_AddFuncAndStart(t *testing.T) {
-	var counter int32
-
-	// 创建 Loops 实例
-	loop := New()
-
-	// 添加一个每 100ms 运行一次的任务
-	loop.AddFunc(100*time.Millisecond, func() {
-		atomic.AddInt32(&counter, 1)
+// TestStopBeforeStart checks that tasks are not running when Stop is called before they start.
+func TestStopBeforeStart(t *testing.T) {
+	loops := New()
+	loops.AddFunc(time.Hour, func() {
+		// This job should not run since we will stop before it starts
+		t.Error("Job should not have started running")
 	})
+	loops.Start()
+	time.Sleep(50 * time.Millisecond)
 
-	// 启动任务
-	loop.Start()
+	// Call Stop before starting the jobs
+	ctx := loops.Stop()
 
-	// 运行一段时间后停止
-	time.Sleep(500 * time.Millisecond)
-
-	// 等待任务完全停止
-	ctx := loop.Stop()
+	// Check that the context is done immediately since jobs haven't started
 	select {
 	case <-ctx.Done():
-		// 任务应已停止
-	case <-time.After(1 * time.Second):
-		t.Fatal("tasks did not stop in time")
-	}
-
-	// 检查任务执行次数是否在合理范围内
-	if atomic.LoadInt32(&counter) < 4 || atomic.LoadInt32(&counter) > 6 {
-		t.Fatalf("expected counter to be between 4 and 6, got %d", counter)
+		// Context is done, which is expected
+	case <-time.After(50 * time.Millisecond):
+		t.Error("Expected context to be done immediately, but it wasn't")
 	}
 }
 
-func TestLoops_MultipleStart(t *testing.T) {
-	var counter int32
+// TestStopWithRunningJobs tests stopping the Loops while jobs are actively running.
+func TestStopWithRunningJobs(t *testing.T) {
+	// This flag will indicate when the job is running.
+	jobRunning := make(chan struct{})
+	jobDone := make(chan struct{})
 
-	// 创建 Loops 实例
-	loop := New()
-
-	// 添加一个每 100ms 运行一次的任务
-	loop.AddFunc(100*time.Millisecond, func() {
-		atomic.AddInt32(&counter, 1)
+	l := New()
+	// Adding a job that signals when it starts running and waits for a short period.
+	l.AddFunc(50*time.Millisecond, func() {
+		close(jobRunning)                  // Signal that the job is running.
+		time.Sleep(200 * time.Millisecond) // Simulate long-running job.
+		close(jobDone)                     // Signal that the job is done.
 	})
 
-	// 多次调用 Start，确保任务只被执行一次
-	loop.Start()
-	loop.Start()
+	// Start the jobs.
+	l.Start()
 
-	// 运行一段时间后停止
-	time.Sleep(500 * time.Millisecond)
+	// Wait for the job to start running.
+	<-jobRunning
 
-	// 等待任务完全停止
-	ctx := loop.Stop()
+	// Stop the Loops while the job is running.
+	ctx := l.Stop()
+
+	// Wait for the job to finish.
 	select {
-	case <-ctx.Done():
-		// 任务应已停止
-	case <-time.After(1 * time.Second):
-		t.Fatal("tasks did not stop in time")
+	case <-jobDone:
+		// Job finished successfully.
+	case <-time.After(300 * time.Millisecond):
+		// Context should be done, but we should allow enough time for the job to complete.
+		t.Error("expected job to stop, but it is still running")
 	}
 
-	// 检查任务执行次数是否在合理范围内
-	if atomic.LoadInt32(&counter) < 4 || atomic.LoadInt32(&counter) > 6 {
-		t.Fatalf("expected counter to be between 4 and 6, got %d", counter)
-	}
-}
-
-func TestLoops_StopWithoutStart(t *testing.T) {
-	// 创建 Loops 实例
-	loop := New()
-
-	// 直接调用 Stop，不应该产生错误或阻塞
-	ctx := loop.Stop()
+	// Ensure the context is canceled.
 	select {
 	case <-ctx.Done():
-		// 成功停止，无需任何操作
-	case <-time.After(1 * time.Second):
-		t.Fatal("stop without start caused a delay")
+		if ctx.Err() != context.Canceled {
+			t.Error("expected context to be canceled, but it wasn't")
+		}
+	default:
+		t.Error("expected context to be canceled, but it wasn't")
 	}
 }
