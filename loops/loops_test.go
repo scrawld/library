@@ -9,7 +9,7 @@ import (
 // TestStopBeforeStart checks that tasks are not running when Stop is called before they start.
 func TestStopBeforeStart(t *testing.T) {
 	loops := New()
-	loops.AddFunc(time.Hour, func() {
+	loops.AddFunc(time.Hour, func(ctx context.Context) {
 		// This job should not run since we will stop before it starts
 		t.Error("Job should not have started running")
 	})
@@ -36,7 +36,7 @@ func TestStopWithRunningJobs(t *testing.T) {
 
 	l := New()
 	// Adding a job that signals when it starts running and waits for a short period.
-	l.AddFunc(50*time.Millisecond, func() {
+	l.AddFunc(50*time.Millisecond, func(ctx context.Context) {
 		close(jobRunning)                  // Signal that the job is running.
 		time.Sleep(200 * time.Millisecond) // Simulate long-running job.
 		close(jobDone)                     // Signal that the job is done.
@@ -68,5 +68,42 @@ func TestStopWithRunningJobs(t *testing.T) {
 		}
 	default:
 		t.Error("expected context to be canceled, but it wasn't")
+	}
+}
+
+// TestStopDuringTask tests stopping the task while it is in progress
+func TestStopDuringTask(t *testing.T) {
+	// Initialize a new loop manager instance
+	loops := New()
+
+	// Add a task that runs every 50 milliseconds, simulating work
+	loops.AddFunc(50*time.Millisecond, func(ctx context.Context) {
+		for {
+			select {
+			// Exit the loop when the context is canceled (task is stopped)
+			case <-ctx.Done():
+				return
+			default:
+			}
+			// Simulate the task by sleeping for 50 milliseconds
+			time.Sleep(50 * time.Millisecond)
+		}
+	})
+
+	// Start the loops (tasks begin execution)
+	loops.Start()
+
+	// Allow the task to start by waiting for 100 milliseconds
+	time.Sleep(100 * time.Millisecond)
+
+	// Stop the loops while the task is running and get the stop context
+	ctx := loops.Stop()
+
+	// Verify that the context is immediately canceled after stopping
+	select {
+	case <-ctx.Done():
+		// Context was canceled as expected
+	case <-time.After(100 * time.Millisecond):
+		t.Error("Expected context to be canceled, but it wasn't")
 	}
 }

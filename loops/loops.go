@@ -12,7 +12,7 @@ import (
 // Spec specifies the time interval between job executions.
 type Entry struct {
 	Spec time.Duration
-	Job  func()
+	Job  func(ctx context.Context)
 }
 
 // Loops is a struct that manages multiple periodic jobs.
@@ -34,7 +34,7 @@ func New() *Loops {
 }
 
 // AddFunc adds a new job to the Loops with the specified interval (Spec) and job function (cmd).
-func (l *Loops) AddFunc(spec time.Duration, cmd func()) {
+func (l *Loops) AddFunc(spec time.Duration, cmd func(ctx context.Context)) {
 	entry := &Entry{
 		Spec: spec,
 		Job:  cmd,
@@ -68,7 +68,7 @@ func (l *Loops) startJob(entry *Entry) {
 
 // runWithRecovery runs the provided job function (f) and recovers from any panic that occurs,
 // logging the panic information for debugging purposes.
-func (l *Loops) runWithRecovery(f func()) {
+func (l *Loops) runWithRecovery(f func(ctx context.Context)) {
 	defer func() {
 		if r := recover(); r != nil {
 			const size = 64 << 10
@@ -77,7 +77,7 @@ func (l *Loops) runWithRecovery(f func()) {
 			log.Printf("loops: panic running job: %v\n%s", r, buf)
 		}
 	}()
-	f()
+	f(l.ctx)
 }
 
 // Stop signals all running jobs to stop and waits for them to complete.
