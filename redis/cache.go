@@ -24,6 +24,11 @@ func (c *Cache) SetPref(pref string) *Cache {
 	return c
 }
 
+func (c *Cache) EmptyPref() *Cache {
+	c.pref = ""
+	return c
+}
+
 func (c *Cache) Set(key string, val interface{}) error {
 	return GetClient().Set(c.ctx, fmt.Sprintf("%s%s", c.pref, key), val, 0).Err()
 }
