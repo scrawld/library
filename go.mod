@@ -10,9 +10,9 @@ require (
 	github.com/go-playground/validator/v10 v10.14.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
-	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/pquerna/otp v1.4.0
 	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/scrawld/zaplog v1.0.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
@@ -43,6 +43,7 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible // indirect
 	github.com/lestrrat-go/strftime v1.0.6 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect

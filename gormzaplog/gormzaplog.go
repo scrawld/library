@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/scrawld/library/zaplog"
+	"github.com/scrawld/zaplog"
 
 	"gorm.io/gorm/logger"
 )
 
-var Logger *GormZapLogger
+var Logger logger.Interface
 
 // RegisterGlobalLogger initializes the global logger
 func RegisterGlobalLogger(directory string, maxAge int, conf logger.Config) error {
@@ -30,7 +30,11 @@ func Sync() error {
 	if Logger == nil {
 		return nil // Logger has not been initialized yet
 	}
-	return Logger.logger.Sync()
+	// Ensure the logger is a GormZapLogger
+	if l, ok := Logger.(*GormZapLogger); ok && l != nil {
+		return l.logger.Sync()
+	}
+	return nil // Logger is either not of type GormZapLogger or invalid
 }
 
 // ParseLevel parses a string into a LogLevel. It returns an error if the input does not match any known log level.
