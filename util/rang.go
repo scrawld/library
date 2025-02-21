@@ -8,13 +8,21 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// RandNum
+// RandNum 生成 int 类型的随机数
 func RandNum(min, max int) int {
 	if max < min || max == min {
 		return min
 	}
 	rand.Seed(time.Now().UnixNano())
 	return min + rand.Intn(max-min+1)
+}
+
+// RandNumInt64 生成 int64 类型的随机数
+func RandNumInt64(min, max int64) int64 {
+	if max <= min {
+		return min
+	}
+	return min + rand.Int63n(max-min+1)
 }
 
 // SplitRedPacket 将总红包金额拆分成指定份数,同时限制每个红包的最大和最小值
