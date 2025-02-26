@@ -11,7 +11,6 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
 	github.com/pquerna/otp v1.4.0
-	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/scrawld/zaplog v1.0.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/viper v1.16.0
@@ -67,6 +66,7 @@ require (
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/goleak v1.3.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.24.0 // indirect
