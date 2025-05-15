@@ -18,7 +18,7 @@ type Lock struct {
 func NewLock(key string) *Lock {
 	uid, _ := uuid.NewRandom()
 	o := &Lock{
-		prefix: fmt.Sprintf("%s.lock", KeyPrefix),
+		prefix: fmt.Sprintf("%s.lock.", KeyPrefix),
 		rawKey: key,
 		tag:    uid.String(),
 	}
@@ -39,7 +39,7 @@ func (l *Lock) EmptyPrefix() *Lock {
 
 // FullKey 返回拼接后的完整 Redis key：<prefix>.<rawKey>
 func (l *Lock) FullKey() string {
-	return fmt.Sprintf("%s.%s", l.prefix, l.rawKey)
+	return l.prefix + l.rawKey
 }
 
 // Lock 尝试获取锁，设置过期时间。如果锁已存在，返回 false
