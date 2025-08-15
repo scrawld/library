@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 
@@ -93,4 +94,63 @@ func GenerateRandomCode(length uint) string {
 		code[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(code)
+}
+
+// GenRandomAmount 根据剩余额度生成随机金额（永不到达最大值）
+// quota: 剩余额度
+// minRatio: 最小比例
+// maxRatio: 最大比例
+func GenRandomAmount(quota decimal.Decimal, minRatio, maxRatio float64) decimal.Decimal {
+	precision := int32(2) // 保留小数位数
+
+	quota = quota.Truncate(precision)
+	if quota.Sign() <= 0 {
+		return decimal.Zero
+	}
+	// 根据剩余额度计算零值概率 
+	if rand.Float64() < CalcZeroProbability(quota.InexactFloat64()) {
+		return decimal.Zero
+	}
+	// 将 quota 转为 float64 用于计算
+	quotaVal := quota.InexactFloat64()
+
+	// 计算上下限
+	minAmt := math.Max(0.01, quotaVal*minRatio)
+	maxAmt := quotaVal * maxRatio
+
+	// 如果最小值大于等于最大值，直接返回零
+	if minAmt >= maxAmt {
+		return decimal.Zero
+	}
+
+	// 生成随机金额
+	rangeSize := maxAmt - minAmt
+	zoneRand := rand.Float64()
+	var amount float64
+
+	switch {
+	case zoneRand < 0.25: // 偏小
+		amount = minAmt + rand.Float64()*rangeSize*0.3
+	case zoneRand < 0.75: // 中等
+		amount = minAmt + rangeSize*0.3 + rand.Float64()*rangeSize*0.4
+	default: // 偏大
+		amount = minAmt + rangeSize*0.7 + rand.Float64()*rangeSize*0.3
+	}
+	if amount >= quotaVal {
+		return decimal.Zero
+	}
+	return decimal.NewFromFloat(amount).Truncate(precision)
+}
+
+// CalcZeroProbability 零值概率计算（剩余越少，零概率越高）
+func CalcZeroProbability(quota float64) float64 {
+	if quota <= 0 {
+		return 1.0
+	}
+	zeroProbBase := 0.05  // 基础零值概率
+	zeroProbGrowth := 0.8 // 零值概率增长率
+
+	quota = math.Max(quota, 0.01)
+	prob := zeroProbBase + (1 - math.Exp(-zeroProbGrowth/quota))
+	return math.Min(0.95, math.Max(zeroProbBase, prob))
 }
