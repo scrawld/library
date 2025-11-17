@@ -26,6 +26,19 @@ func RandNumInt64(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }
 
+// RandNumDecimal 生成 Decimal 类型的随机数，范围 [min, max]，精度 precision
+func RandNumDecimal(min, max decimal.Decimal, precision int32) decimal.Decimal {
+	if max.LessThanOrEqual(min) {
+		return min.Truncate(precision)
+	}
+	diffInt := max.Sub(min).Shift(precision).IntPart()
+	if diffInt <= 0 {
+		return min.Truncate(precision)
+	}
+	randInt := rand.Int63n(diffInt + 1)
+	return min.Add(decimal.New(randInt, -precision)).Truncate(precision)
+}
+
 // SplitRedPacket 将总红包金额拆分成指定份数,同时限制每个红包的最大和最小值
 func SplitRedPacket(packetCount int64, totalAmount, minAmount, maxAmount decimal.Decimal) ([]decimal.Decimal, error) {
 	precision := int32(2) // 保留小数位数
