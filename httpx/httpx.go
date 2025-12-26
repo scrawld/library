@@ -12,7 +12,7 @@ import (
  * Example:
  *
  * var (
- * 	respBody = map[string]interface{}{}
+ * 	respBody = map[string]any{}
  * )
  * _, err = Get("http://127.0.0.1:8080", &respBody)
  * or
@@ -21,7 +21,7 @@ import (
  * 	SetTimeout(time.Second*10),
  * )
  */
-func Get(url string, respBody interface{}, options ...ClientOptionFunc) (r *http.Response, err error) {
+func Get(url string, respBody any, options ...ClientOptionFunc) (r *http.Response, err error) {
 	return Call(url, respBody, options...)
 }
 
@@ -34,7 +34,7 @@ func Get(url string, respBody interface{}, options ...ClientOptionFunc) (r *http
  *
  * var (
  *	req      = []byte(`{"name":"xxx","amount":1}`)
- * 	respBody = map[string]interface{}{}
+ * 	respBody = map[string]any{}
  * )
  * _, err = PostJson("http://127.0.0.1:8080", req, &respBody)
  * or
@@ -43,7 +43,7 @@ func Get(url string, respBody interface{}, options ...ClientOptionFunc) (r *http
  * 	SetTimeout(time.Second*10),
  * )
  */
-func Post(url string, body interface{}, respBody interface{}, options ...ClientOptionFunc) (r *http.Response, err error) {
+func Post(url string, body, respBody any, options ...ClientOptionFunc) (r *http.Response, err error) {
 	options = append(options, SetMethod("POST"))
 	if body != nil {
 		options = append(options, SetBody(body))
@@ -52,7 +52,7 @@ func Post(url string, body interface{}, respBody interface{}, options ...ClientO
 }
 
 // PostForm
-func PostForm(url string, body interface{}, respBody interface{}, options ...ClientOptionFunc) (r *http.Response, err error) {
+func PostForm(url string, body, respBody any, options ...ClientOptionFunc) (r *http.Response, err error) {
 	options = append(options, SetMethod("POST"), SetHeader(map[string]string{"Content-Type": "application/x-www-form-urlencoded"}))
 	if body != nil {
 		options = append(options, SetBody(body))

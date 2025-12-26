@@ -28,7 +28,7 @@ type Client struct {
 	// Timeout specifies a time limit for requests made by this
 	Timeout time.Duration
 	// Adding query parameters to URL
-	Query map[string]interface{}
+	Query map[string]any
 }
 
 type ClientOptionFunc func(*Client) error
@@ -42,7 +42,7 @@ func SetMethod(method string) ClientOptionFunc {
 }
 
 // SetHeader sets the request header
-func SetHeader(header interface{}) ClientOptionFunc {
+func SetHeader(header any) ClientOptionFunc {
 	return func(c *Client) error {
 		switch h := header.(type) {
 		case map[string]string:
@@ -61,7 +61,7 @@ func SetHeader(header interface{}) ClientOptionFunc {
 }
 
 // SetBody sets the request body
-func SetBody(body interface{}) ClientOptionFunc {
+func SetBody(body any) ClientOptionFunc {
 	return func(c *Client) error {
 		switch b := body.(type) {
 		case []byte:
@@ -90,7 +90,7 @@ func SetTimeout(timeout time.Duration) ClientOptionFunc {
 }
 
 // SetQuery sets the request query parameters
-func SetQuery(query map[string]interface{}) ClientOptionFunc {
+func SetQuery(query map[string]any) ClientOptionFunc {
 	return func(c *Client) error {
 		c.Query = query
 		return nil
@@ -99,7 +99,7 @@ func SetQuery(query map[string]interface{}) ClientOptionFunc {
 
 // Call sends an HTTP request and returns an HTTP response
 // Note: When resp is nil, you have to do it manually `response.Body.Close()`
-func Call(url string, respBody interface{}, options ...ClientOptionFunc) (r *http.Response, err error) {
+func Call(url string, respBody any, options ...ClientOptionFunc) (r *http.Response, err error) {
 	// Set up the client
 	c := &Client{Header: make(http.Header), Timeout: defaultTimeout}
 
