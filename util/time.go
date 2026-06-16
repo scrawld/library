@@ -25,6 +25,11 @@ func StartOfDay(t time.Time) (r time.Time) {
 	return
 }
 
+// EndOfDay 返回指定时间当天的最后一刻 23:59:59,时区与入参保持一致
+func EndOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
+}
+
 // DaysBetween 计算两个时间之间的天数差异
 func DaysBetween(start, end time.Time) int {
 	startZero := time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, start.Location())
