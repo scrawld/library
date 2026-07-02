@@ -2,6 +2,7 @@ package util
 
 import (
 	"math/rand"
+	"slices"
 	"time"
 )
 
@@ -17,17 +18,17 @@ func InSlice[T comparable](val T, slice []T) (bool, int) {
 
 // SliceDiff 函数用于比较两个数组的值，并返回差集
 func SliceDiff[T comparable](slice1, slice2 []T) (r []T) {
-	for i := 0; i < len(slice1); i++ {
-		if exists, _ := InSlice(slice1[i], slice2); exists {
+	for _, v := range slice1 {
+		if slices.Contains(slice2, v) {
 			continue
 		}
-		r = append(r, slice1[i])
+		r = append(r, v)
 	}
-	for i := 0; i < len(slice2); i++ {
-		if exists, _ := InSlice(slice2[i], slice1); exists {
+	for _, v := range slice2 {
+		if slices.Contains(slice1, v) {
 			continue
 		}
-		r = append(r, slice2[i])
+		r = append(r, v)
 	}
 	return
 }
@@ -35,13 +36,12 @@ func SliceDiff[T comparable](slice1, slice2 []T) (r []T) {
 // SliceUnique 函数用于移除数组中重复的值
 func SliceUnique[T comparable](slice []T) (r []T) {
 	m := map[T]struct{}{}
-	for i := 0; i < len(slice); i++ {
-		t := slice[i]
-		if _, ok := m[t]; ok {
+	for _, v := range slice {
+		if _, ok := m[v]; ok {
 			continue
 		}
-		m[t] = struct{}{}
-		r = append(r, t)
+		m[v] = struct{}{}
+		r = append(r, v)
 	}
 	return
 }
@@ -58,6 +58,9 @@ func SliceShuffle[T any](slice []T) {
 
 // SliceChunk 函数把一个数组分割为新的数组块
 func SliceChunk[T comparable](slice []T, size int) (r [][]T) {
+	if size <= 0 || len(slice) == 0 {
+		return nil
+	}
 	for size < len(slice) {
 		r, slice = append(r, slice[0:size:size]), slice[size:]
 	}
