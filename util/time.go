@@ -182,7 +182,9 @@ func GetWeekBounds(yearWeek int) (firstDay, lastDay time.Time) {
 
 // GetMonthByOffset 获取月份 GetMonthByOffset(time.Now(), 0) return 202308
 func GetMonthByOffset(tm time.Time, offset int) (r int) {
-	r, _ = strconv.Atoi(tm.AddDate(0, offset, 0).Format("200601"))
+	// 统一设为月初，规避月末日期导致的进位问题
+	firstDay := time.Date(tm.Year(), tm.Month(), 1, 0, 0, 0, 0, tm.Location())
+	r, _ = strconv.Atoi(firstDay.AddDate(0, offset, 0).Format("200601"))
 	return
 }
 
