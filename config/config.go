@@ -14,10 +14,10 @@ type ServerConfig struct {
 		Port  string `yaml:"port"`
 	} `yaml:"basic"`
 
-	DB map[string]struct {
-		Master Mysql `yaml:"master"`
-		Slave  Mysql `yaml:"slave"`
-	} `yaml:"db"`
+	MySQL map[string]struct {
+		Master MySQLNode `yaml:"master"`
+		Slave  MySQLNode `yaml:"slave"`
+	} `yaml:"mysql"`
 
 	Redis struct {
 		Addr         string `yaml:"addr"`         // 服务器地址:端口
@@ -40,8 +40,8 @@ type ServerConfig struct {
 	InnerServer map[string]string `yaml:"inner-server"`
 }
 
-// mysql
-type Mysql struct {
+// MySQLNode
+type MySQLNode struct {
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	Username string `yaml:"username"`
