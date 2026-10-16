@@ -1,9 +1,7 @@
-package namematch_test
+package namematch
 
 import (
 	"testing"
-
-	"test_kyc/library/namematch"
 )
 
 // TestNameSimilarity
@@ -19,7 +17,7 @@ func TestNameSimilarity(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := namematch.Similarity(tt.a, tt.b)
+		got := Similarity(tt.a, tt.b)
 		t.Logf("%-15s %-15s %.2f", tt.a, tt.b, got)
 	}
 }
