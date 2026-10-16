@@ -16,6 +16,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.11.1
 	github.com/valyala/fasthttp v1.55.0
+	github.com/xrash/smetrics v0.0.0-20261013231157-39c47d93efba
 	github.com/xuri/excelize/v2 v2.7.1
 	go.uber.org/zap v1.24.0
 	gorm.io/driver/mysql v1.5.7
