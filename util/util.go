@@ -31,7 +31,7 @@ func Assign(origin, target any, excludes ...string) error {
 		originVal, targetVal   = reflect.ValueOf(origin), reflect.ValueOf(target)
 		originKind, targetKind = originVal.Kind(), targetVal.Kind()
 	)
-	if originKind != reflect.Ptr || targetKind != reflect.Ptr {
+	if originKind != reflect.Pointer || targetKind != reflect.Pointer {
 		return fmt.Errorf("origin and target must be pointers, current %s %s", originKind, targetKind)
 	}
 	originVal, targetVal = originVal.Elem(), targetVal.Elem()
@@ -45,7 +45,7 @@ func Assign(origin, target any, excludes ...string) error {
 	for _, v := range excludes {
 		excludeMap[v] = struct{}{}
 	}
-	for i := 0; i < originVal.NumField(); i++ {
+	for i := range originVal.NumField() {
 		if _, isExclude := excludeMap[originVal.Type().Field(i).Name]; isExclude {
 			continue
 		}
