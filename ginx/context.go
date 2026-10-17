@@ -14,7 +14,7 @@ import (
 type Context struct {
 	ctx    *gin.Context
 	Log    *zaplog.TracingLogger
-	Params interface{}
+	Params any
 }
 
 /**
@@ -54,7 +54,7 @@ type Context struct {
  * 	ctx.Render(r)
  * }
  */
-func NewContext(ctx *gin.Context, utype UserType, params interface{}) (r *Context, isAllow bool) {
+func NewContext(ctx *gin.Context, utype UserType, params any) (r *Context, isAllow bool) {
 	r = &Context{
 		ctx:    ctx,
 		Log:    zaplog.New(ctx.GetHeader("X-Request-Id")).Named("API"),
@@ -81,7 +81,7 @@ func NewContext(ctx *gin.Context, utype UserType, params interface{}) (r *Contex
 	return
 }
 
-func (c *Context) ShouldBind(obj interface{}) error {
+func (c *Context) ShouldBind(obj any) error {
 	if obj == nil {
 		return nil
 	}
@@ -94,9 +94,9 @@ func (c *Context) ClientIP() string {
 
 /************ Render **************/
 type RenderStruct struct {
-	Code    HttpStatus  `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	Code    HttpStatus `json:"code"`
+	Message string     `json:"message"`
+	Data    any        `json:"data"`
 }
 
 // WriteExcel 将excel文件返回
@@ -110,7 +110,7 @@ func (c *Context) WriteExcel(h []byte, filename string) {
 }
 
 // Render 成功返回并打印日志
-func (c *Context) Render(data interface{}) {
+func (c *Context) Render(data any) {
 	if data == nil {
 		data = []string{}
 	}
@@ -123,7 +123,7 @@ func (c *Context) Render(data interface{}) {
 }
 
 // RenderNotLog 成功返回无日志
-func (c *Context) RenderNotLog(data interface{}) {
+func (c *Context) RenderNotLog(data any) {
 	if data == nil {
 		data = []string{}
 	}

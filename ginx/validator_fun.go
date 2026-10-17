@@ -7,7 +7,7 @@ import (
 )
 
 // ValidateDecimalType 将Decimal转成float64进行校验
-func ValidateDecimalType(field reflect.Value) interface{} {
+func ValidateDecimalType(field reflect.Value) any {
 	fieldDecimal, ok := field.Interface().(decimal.Decimal)
 	if ok {
 		value, _ := fieldDecimal.Float64()

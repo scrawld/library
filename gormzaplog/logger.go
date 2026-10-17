@@ -61,23 +61,23 @@ func (l *GormZapLogger) LogMode(level logger.LogLevel) logger.Interface {
 }
 
 // Info print info
-func (l GormZapLogger) Info(ctx context.Context, msg string, data ...interface{}) {
+func (l GormZapLogger) Info(ctx context.Context, msg string, data ...any) {
 	if l.LogLevel >= logger.Info {
-		l.logger.Infof(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		l.logger.Infof(l.infoStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
 // Warn print warn messages
-func (l GormZapLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
+func (l GormZapLogger) Warn(ctx context.Context, msg string, data ...any) {
 	if l.LogLevel >= logger.Warn {
-		l.logger.Warnf(l.warnStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		l.logger.Warnf(l.warnStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
 // Error print error messages
-func (l GormZapLogger) Error(ctx context.Context, msg string, data ...interface{}) {
+func (l GormZapLogger) Error(ctx context.Context, msg string, data ...any) {
 	if l.LogLevel >= logger.Error {
-		l.logger.Errorf(l.errStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+		l.logger.Errorf(l.errStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 	}
 }
 
@@ -115,7 +115,7 @@ func (l GormZapLogger) Trace(ctx context.Context, begin time.Time, fc func() (st
 }
 
 // Trace print sql message
-func (l GormZapLogger) ParamsFilter(ctx context.Context, sql string, params ...interface{}) (string, []interface{}) {
+func (l GormZapLogger) ParamsFilter(ctx context.Context, sql string, params ...any) (string, []any) {
 	if l.Config.ParameterizedQueries {
 		return sql, nil
 	}

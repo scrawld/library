@@ -120,7 +120,7 @@ func GenRandomAmount(quota decimal.Decimal, minRatio, maxRatio float64) decimal.
 	if quota.Sign() <= 0 {
 		return decimal.Zero
 	}
-	// 根据剩余额度计算零值概率 
+	// 根据剩余额度计算零值概率
 	if rand.Float64() < CalcZeroProbability(quota.InexactFloat64()) {
 		return decimal.Zero
 	}

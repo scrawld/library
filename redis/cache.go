@@ -29,11 +29,11 @@ func (c *Cache) EmptyPrefix() *Cache {
 	return c
 }
 
-func (c *Cache) Set(key string, val interface{}) error {
+func (c *Cache) Set(key string, val any) error {
 	return GetClient().Set(c.ctx, fmt.Sprintf("%s%s", c.prefix, key), val, 0).Err()
 }
 
-func (c *Cache) SetEX(key string, val interface{}, expire time.Duration) error {
+func (c *Cache) SetEX(key string, val any, expire time.Duration) error {
 	return GetClient().Set(c.ctx, fmt.Sprintf("%s%s", c.prefix, key), val, expire).Err()
 }
 

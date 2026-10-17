@@ -91,7 +91,7 @@ func TestFailedUpsert(t *testing.T) {
 		Num:   1,
 	}
 	result = db.Clauses(clause.OnConflict{
-		DoUpdates: clause.Assignments(map[string]interface{}{
+		DoUpdates: clause.Assignments(map[string]any{
 			"role": "user",
 		}),
 	}).Create(u)

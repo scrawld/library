@@ -7,8 +7,8 @@ import (
 )
 
 // StructDiff
-func StructDiff(s1, s2 interface{}, excludes ...string) (before, after map[string]interface{}) {
-	before, after = map[string]interface{}{}, map[string]interface{}{}
+func StructDiff(s1, s2 any, excludes ...string) (before, after map[string]any) {
+	before, after = map[string]any{}, map[string]any{}
 
 	valS1 := reflect.ValueOf(s1)
 	valS2 := reflect.ValueOf(s2)

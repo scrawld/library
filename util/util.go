@@ -26,7 +26,7 @@ import (
  * Assign(u1, u2)
  * fmt.Println(u1, u2)
  */
-func Assign(origin, target interface{}, excludes ...string) error {
+func Assign(origin, target any, excludes ...string) error {
 	var (
 		originVal, targetVal   = reflect.ValueOf(origin), reflect.ValueOf(target)
 		originKind, targetKind = originVal.Kind(), targetVal.Kind()
