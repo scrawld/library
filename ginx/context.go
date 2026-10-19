@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/scrawld/zaplog"
+	"yourpackage/library/zaplog"
 
 	"github.com/gin-gonic/gin"
 )

@@ -8,8 +8,8 @@
 package main
 
 import (
-	_ "github.com/scrawld/library/ginx"
-	ginxMiddleware "github.com/scrawld/library/library/ginx/middleware"
+	_ "yourpackage/library/ginx"
+	ginxMiddleware "yourpackage/library/library/ginx/middleware"
 )
 
 router := gin.Default()

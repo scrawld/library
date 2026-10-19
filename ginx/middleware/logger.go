@@ -3,7 +3,7 @@ package middleware
 import (
 	"time"
 
-	"github.com/scrawld/zaplog"
+	"yourpackage/library/zaplog"
 
 	"github.com/gin-gonic/gin"
 )
