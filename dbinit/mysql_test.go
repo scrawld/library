@@ -16,7 +16,7 @@ func TestOpenMySQL(t *testing.T) {
 		DBName:   "account",
 	}
 
-	db, err := OpenMySQL(cfg, true)
+	db, err := OpenMySQL(cfg, WithDebug())
 	require.NoError(t, err)
 
 	sqlDB, err := db.DB()

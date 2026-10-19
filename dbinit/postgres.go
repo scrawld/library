@@ -30,19 +30,23 @@ func (c PostgresConfig) DSN() string {
 }
 
 // OpenPostgres initializes a PostgreSQL connection; set debug=true to log SQL
-func OpenPostgres(config PostgresConfig, debug bool) (*gorm.DB, error) {
-	logLevel := logger.Silent
-	if debug {
-		logLevel = logger.Info
+func OpenPostgres(config PostgresConfig, options ...GormOption) (*gorm.DB, error) {
+	// Default GORM configuration.
+	gormConfig := &gorm.Config{
+		NamingStrategy:  schema.NamingStrategy{SingularTable: true}, // use singular table names
+		Logger:          logger.Default,
+		CreateBatchSize: 1000,
+	}
+
+	// Apply the caller-provided options in order; later options override earlier ones.
+	for _, option := range options {
+		if err := option(gormConfig); err != nil {
+			return nil, fmt.Errorf("apply gorm option: %w", err)
+		}
 	}
 	dsn := config.DSN()
 
-	db, err := gorm.Open(postgres.Open(dsn),
-		&gorm.Config{
-			NamingStrategy:  schema.NamingStrategy{SingularTable: true}, // 禁用表名复数
-			Logger:          logger.Default.LogMode(logLevel),
-			CreateBatchSize: 1000,
-		})
+	db, err := gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
 		return nil, fmt.Errorf("db connect fail: %s, dsn=%s", err, dsn)
 	}

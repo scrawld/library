@@ -16,7 +16,7 @@ func TestOpenPostgres(t *testing.T) {
 		DBName:   "postgres",
 	}
 
-	db, err := OpenPostgres(cfg, true)
+	db, err := OpenPostgres(cfg, WithDebug())
 	require.NoError(t, err)
 
 	sqlDB, err := db.DB()
