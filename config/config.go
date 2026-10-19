@@ -14,6 +14,12 @@ type ServerConfig struct {
 		Port  string `yaml:"port"`
 	} `yaml:"basic"`
 
+	Log struct {
+		Level     string `yaml:"level"`
+		Directory string `yaml:"directory"`
+		MaxAge    int    `yaml:"maxAge"`
+	} `yaml:"log"`
+
 	MySQL map[string]struct {
 		Master MySQLNode `yaml:"master"`
 		Slave  MySQLNode `yaml:"slave"`
