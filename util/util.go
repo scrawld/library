@@ -5,27 +5,7 @@ import (
 	"reflect"
 )
 
-/**
- * Assign 结构体赋值
- *
- * Example:
- *
- * type User1 struct {
- * 	Name string
- * 	Age  int
- * }
- *
- * type User2 struct {
- * 	Name string
- * 	Age  int
- * }
- *
- * u1 := &User1{Name: "zhangsan", Age: 20}
- * u2 := &User2{}
- *
- * Assign(u1, u2)
- * fmt.Println(u1, u2)
- */
+// Assign 结构体同名字段赋值,excludes 为排除的字段
 func Assign(origin, target any, excludes ...string) error {
 	var (
 		originVal, targetVal   = reflect.ValueOf(origin), reflect.ValueOf(target)

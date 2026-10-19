@@ -15,8 +15,8 @@ const (
 	HttpStatusServerErr    HttpStatus = 500 // 服务器内部错误
 )
 
-type UserType string
+type Role string
 
 const (
-	UserTypeAny UserType = "any" // 允许全部用户访问
+	RoleAny Role = ""
 )

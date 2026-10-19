@@ -17,44 +17,8 @@ type Context struct {
 	Params any
 }
 
-/**
- * NewContext 请求上下文封装, 实现了日志链路追踪、参数解析、参数校验
- *
- * Example:
- *
- * import (
- * 	_ "github.com/scrawld/library/ginx"
- * 	ginxMiddleware "github.com/scrawld/library/library/ginx/middleware"
- * )
- *
- * router := gin.Default()
- * router.Use(ginxMiddleware.RequestId()).Use(ginxMiddleware.Logger())
- *
- * type UserIndexReq struct {
- *	UserId    int      `json:"userId" binding:"required"`
- *	UserName  string   `json:"userName" binding:"required"`
- * }
- *
- * func (cont *UserController) Index(c *gin.Context) {
- *	p := &UserIndexReq{}
- *	ctx, ok := ginx.NewContext(c, ginx.UserTypeAny, p)
- * 	if !ok {
- * 		return
- * 	}
- * 	r := UserIndexResp{}
- *
- * 	ctx.Log.Infof("userId %s", p.UserId)
- * 	ctx.Log.Errorf("userId %s", p.UserId)
- *
- * 	// ...
- * 	if err != nil {
- * 		ctx.RenderServerError(fmt.Errorf("search user report error: %s", err))
- * 		return
- * 	}
- * 	ctx.Render(r)
- * }
- */
-func NewContext(ctx *gin.Context, utype UserType, params any) (r *Context, isAllow bool) {
+// NewContext 请求上下文封装, 实现了日志链路追踪、参数解析、参数校验
+func NewContext(ctx *gin.Context, role Role, params any) (r *Context, isAllow bool) {
 	r = &Context{
 		ctx:    ctx,
 		Log:    zaplog.New(ctx.GetHeader("X-Request-Id")).Named("API"),
