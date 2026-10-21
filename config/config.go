@@ -43,7 +43,7 @@ type ServerConfig struct {
 	} `yaml:"rabbitmq"`
 
 	// 内部服务地址配置
-	InnerServer map[string]string `yaml:"inner-server"`
+	Inner map[string]string `yaml:"inner"`
 }
 
 // MySQLNode
