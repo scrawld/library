@@ -2,6 +2,8 @@ package dbinit
 
 import (
 	"fmt"
+	"net"
+	"net/url"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -17,16 +19,21 @@ type PostgresConfig struct {
 	Username string
 	Password string
 	DBName   string
-	SSLMode  string
+	SSLMode  string // disable / prefer / require / verify-full,为空时默认 prefer
 }
 
 // DSN builds the MySQL DSN string
 func (c PostgresConfig) DSN() string {
-	sslmode := c.SSLMode
-	if sslmode == "" {
-		sslmode = "disable"
+	u := url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(c.Username, c.Password),
+		Host:   net.JoinHostPort(c.Host, c.Port),
+		Path:   c.DBName,
 	}
-	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", c.Username, c.Password, c.Host, c.Port, c.DBName, sslmode)
+	if c.SSLMode != "" {
+		u.RawQuery = url.Values{"sslmode": {c.SSLMode}}.Encode()
+	}
+	return u.String()
 }
 
 // OpenPostgres initializes a PostgreSQL connection; set debug=true to log SQL
