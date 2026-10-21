@@ -38,7 +38,7 @@ func NewContext(ctx *gin.Context, role Role, params any) (r *Context, isAllow bo
 	// validate params
 	if err := r.ShouldBind(params); err != nil {
 		r.Log.Infof("Params validate error: %s", err)
-		r.RenderError(HttpStatusParamsErr, fmt.Errorf("Params validate error: %s", err))
+		r.RenderError(ErrCodeParams, fmt.Errorf("Params validate error: %s", err))
 		return
 	}
 	isAllow = true
@@ -58,9 +58,9 @@ func (c *Context) ClientIP() string {
 
 /************ Render **************/
 type RenderStruct struct {
-	Code    HttpStatus `json:"code"`
-	Message string     `json:"message"`
-	Data    any        `json:"data"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    any    `json:"data"`
 }
 
 // WriteExcel 将excel文件返回
@@ -79,7 +79,7 @@ func (c *Context) Render(data any) {
 		data = []string{}
 	}
 	h := RenderStruct{
-		Code: HttpStatusOk,
+		Code: 0,
 		Data: data,
 	}
 	c.Log.Infof("Response: %+v", h)
@@ -92,14 +92,14 @@ func (c *Context) RenderNotLog(data any) {
 		data = []string{}
 	}
 	h := RenderStruct{
-		Code: HttpStatusOk,
+		Code: 0,
 		Data: data,
 	}
 	c.ctx.JSON(http.StatusOK, h)
 }
 
 // RenderError 错误返回
-func (c *Context) RenderError(code HttpStatus, e error) {
+func (c *Context) RenderError(code int, e error) {
 	h := RenderStruct{
 		Code:    code,
 		Message: e.Error(),
@@ -110,7 +110,7 @@ func (c *Context) RenderError(code HttpStatus, e error) {
 }
 
 // RenderRealError 错误返回并将realE以Error日志打印
-func (c *Context) RenderRealError(code HttpStatus, userE error, realE error) {
+func (c *Context) RenderRealError(code int, userE error, realE error) {
 	if realE != nil {
 		c.Log.Warnf(realE.Error())
 	}
@@ -128,5 +128,5 @@ func (c *Context) RenderRealError(code HttpStatus, userE error, realE error) {
 
 // RenderServerError 返回系统错误500并打印e
 func (c *Context) RenderServerError(e error) {
-	c.RenderRealError(HttpStatusServerErr, e, e)
+	c.RenderRealError(ErrCodeServer, e, e)
 }
