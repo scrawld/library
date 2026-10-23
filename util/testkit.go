@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -27,7 +28,7 @@ func StartTestServer(handler http.Handler) (string, func(), error) {
 		Handler: handler,
 	}
 	go func() {
-		if err := srv.Serve(ln); err != nil {
+		if err := srv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			fmt.Printf("Error starting server: %v\n", err)
 		}
 	}()
@@ -59,7 +60,7 @@ func StartFasthttpTestServer(handler fasthttp.RequestHandler) (string, func(), e
 		Handler: handler,
 	}
 	go func() {
-		if err := srv.Serve(ln); err != nil {
+		if err := srv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			fmt.Printf("Error starting server: %v\n", err)
 		}
 	}()
